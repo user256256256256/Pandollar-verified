@@ -1,0 +1,153 @@
+﻿@using DevExtreme.AspNet.Mvc
+@using PANDOLLAR.Areas.CoreSystem.Models
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Clients Info";
+}
+
+<!-- Section Title Card -->
+<div class="card col-12 card-title">
+    <center><span><i data-feather="users"></i> CLIENT INFORMATION</span></center>
+</div>
+
+<div class="row">
+    <div class="form-group col-md-4">
+        <label class="my-3">Company Name:</label>
+        @(Html.DevExtreme().SelectBox()
+            .DataSource(d => d.Mvc().Controller("CompaniesAPI").LoadAction("Get").Key("CompanyId"))
+            .DisplayExpr("CompanyName")
+            .ValueExpr("CompanyId")
+            .SearchEnabled(true)
+            .ShowClearButton(true)
+            .Placeholder("Select Company")
+            .Width("100%")
+            .ID("txt_company")
+            .OnValueChanged(@<text>
+            function(e){
+                const grid = $('#gv_clientList').dxDataGrid('instance');
+                grid.refresh();
+            }
+        </text>)
+            )
+    </div>
+</div>
+
+<!-- Client List DataGrid -->
+<div class="card" style="padding:20px">
+    @(Html.DevExtreme().DataGrid<CompanyClient>()
+        .ShowBorders(true)
+        .ID("gv_clientList")
+        .DataSource(d => d.Mvc().Controller("CompanyClientsAPI").LoadAction("Get").Key("ClientId")
+        .InsertAction("Post")
+        .UpdateAction("Put")
+        .DeleteAction("Delete")
+        .LoadParams(new { CompanyId = new JS("getCompanyId") }))
+        .ShowColumnLines(false)
+        .ShowRowLines(true)
+        .RowAlternationEnabled(true)
+        .ShowBorders(true)
+        .ColumnHidingEnabled(true)
+        .ColumnAutoWidth(true)
+        .OnFocusedRowChanged("onMainRowChanged")
+        .Columns(columns =>
+        {
+            // Comany Clients Data Columns
+            columns.AddFor(m => m.ClientId).Caption("Client ID").Visible(false);
+            columns.AddFor(m => m.ClientName).Caption("Client Name").Visible(true);
+            columns.AddFor(m => m.DateOfBirth).Caption("Date of Birth").Format("dd MMM, yyyy");
+            columns.AddFor(m => m.Gender).Caption("Gender").Visible(true);
+            columns.AddFor(m => m.Email).Caption("Email").Visible(true);
+            columns.AddFor(m => m.PhoneNumber).Caption("Phone").Visible(true);
+            columns.AddFor(m => m.EmergencyContactName).Caption("Emergency Contact Name").Visible(true);
+            columns.AddFor(m => m.EmergencyContactPhone).Caption("Emergency Contact Phone").Visible(true);
+            columns.AddFor(m => m.MaritalStatus).Caption("Marital Status").Visible(true);
+            columns.AddFor(m => m.Nationality).Caption("Nationality").Visible(true);
+            columns.AddFor(m => m.CreatedAt).Caption("Date Created").Format("dd MMM, yyyy").AllowEditing(false);
+
+            // Add column for Client Address --a foreign key in Company Clients Model
+            columns.AddFor(m => m.AddressId).Caption("Address ID").Visible(false);
+            columns.AddFor(m => m.Address.Street).Caption("Street").Visible(true);
+            columns.AddFor(m => m.Address.City).Caption("City").Visible(true);
+            columns.AddFor(m => m.Address.State).Caption("State").Visible(true);
+            columns.AddFor(m => m.Address.PostalCode).Caption("Postal Code").Visible(true);
+            columns.AddFor(m => m.Address.Country).Caption("Country").Visible(true);
+            columns.Add()
+            .Type(GridCommandColumnType.Buttons)
+            .Width(80)
+            .Caption("Manage")
+            .Buttons(b =>
+            {
+                b.Add().Name(GridColumnButtonName.Edit).Hint("Edit");
+                b.Add().Name(GridColumnButtonName.Delete).Hint("Delete");
+            });
+        })
+        .Selection(s => s.Mode(SelectionMode.Multiple))
+        .SearchPanel(s => s.Visible(true).Width(250).Placeholder("Search..."))
+        .FocusedRowEnabled(true)
+        .Editing(e => e
+        .AllowAdding(false)
+        .AllowUpdating(false)
+        .AllowDeleting(true)
+        .UseIcons(true)
+        .Mode(GridEditMode.Popup)
+        .Popup(p => p
+        .Title("Client Management")
+        .Height(450)
+        .ShowTitle(true)
+        .Position(pos => pos
+        .My(HorizontalAlignment.Center, VerticalAlignment.Center)
+        .At(HorizontalAlignment.Center, VerticalAlignment.Center)
+        .Of(new JS("window"))
+        )
+        )
+        .Form(f => f.Items(items =>
+        {
+            items.AddGroup()
+            .Caption("Client Details")
+            .ColCount(2)
+            .ColSpan(2)
+            .Items(groupItems =>
+            {
+                groupItems.AddSimpleFor(m => m.ClientName);
+                groupItems.AddSimpleFor(m => m.DateOfBirth);
+                groupItems.AddSimpleFor(m => m.Gender);
+                groupItems.AddSimpleFor(m => m.Email);
+                groupItems.AddSimpleFor(m => m.PhoneNumber);
+                groupItems.AddSimpleFor(m => m.Address.Street);
+                groupItems.AddSimpleFor(m => m.Address.City);
+                groupItems.AddSimpleFor(m => m.Address.State);
+                groupItems.AddSimpleFor(m => m.Address.PostalCode);
+                groupItems.AddSimpleFor(m => m.Address.Country);
+                groupItems.AddSimpleFor(m => m.EmergencyContactName);
+                groupItems.AddSimpleFor(m => m.EmergencyContactPhone);
+                groupItems.AddSimpleFor(m => m.MaritalStatus);
+                groupItems.AddSimpleFor(m => m.Nationality);
+                groupItems.AddSimpleFor(m => m.CreatedAt).Visible(false);
+            });
+        }).ScrollingEnabled(true))
+        )
+        .Paging(p => p.PageSize(10))
+        .RemoteOperations(true)
+        .Summary(s => s
+        .TotalItems(totalItems =>
+        {
+            totalItems.AddFor(m => m.ClientName).SummaryType(SummaryType.Count);
+        })
+        )
+        )
+</div>
+
+<script>
+    // Handling row change for the client grid
+    function onMainRowChanged(e) {
+        const rowData = e.row && e.row.data;
+        // You can add your custom logic here to handle row change
+    }
+
+    // Get the selected company ID
+    function getCompanyId() {
+        var companyId = $("#txt_company").dxSelectBox('option', 'value');
+        return companyId;
+    }
+</script>

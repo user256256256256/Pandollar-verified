@@ -1,0 +1,107 @@
+﻿@using DevExtreme.AspNet.Mvc
+@using PANDOLLAR.Areas.CoreSystem.Models
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "User Accounts";
+}
+
+<!-- Section Title Card -->
+<div class="card col-12 card-title">
+    <center><span><i data-feather="users"></i> USER ACCOUNTS</span></center>
+</div>
+
+<!-- Filter by Role Section -->
+<div class="row">
+    <div class="form-group col-md-4">
+        <label class="my-3">Role:</label>
+        @(Html.DevExtreme().SelectBox()
+            .DataSource(d => d.Mvc().Controller("AspNetRolesAPI").LoadAction("Get").Key("RoleId"))
+            .DisplayExpr("Name")
+            .ValueExpr("Id")
+            .SearchEnabled(true)
+            .ShowClearButton(true)
+            .Placeholder("Select Role")
+            .Width("100%")
+            .ID("txt_role")
+            .OnValueChanged(@<text>
+            function(e){
+            // Refresh the grid when the role is changed
+            const grid = $('#gv_userList').dxDataGrid('instance');
+            grid.refresh();  // Triggers a reload with the updated parameters
+            }
+        </text>))
+    </div>
+</div>
+
+<!-- DevExtreme DataGrid for User Accounts -->
+<div id="userGrid">
+    @(
+        Html.DevExtreme().DataGrid<AspNetUser>()
+        .ShowBorders(true)
+        .ID("gv_userList")
+        .DataSource(d => d.Mvc().Controller("AspNetUsersAPI").LoadAction("Get").Key("Id")
+        .UpdateAction("Put")
+        .LoadParams(new { RoleId = new JS("getRoleId") }))
+        .ShowColumnLines(false)
+        .ShowRowLines(true)
+        .RowAlternationEnabled(true)
+        .ColumnHidingEnabled(true)
+        .ColumnAutoWidth(true)
+        .Selection(s => s.Mode(SelectionMode.Multiple))
+        .SearchPanel(s => s.Visible(true).Width(250).Placeholder("Search..."))
+        .FocusedRowEnabled(true)
+        .Paging(p => p.PageSize(10))
+        .RemoteOperations(true)
+        .Editing(e => e
+        .AllowAdding(false)  // Disable adding new users
+        .AllowUpdating(true)  // Allow updating user details
+        .AllowDeleting(true)  // Allow deleting users
+        .UseIcons(true) // Use Icons
+        .Mode(GridEditMode.Popup)
+        .Popup(p => p
+        .Title("User Account")
+        .Height(450)
+        .ShowTitle(true)
+        .Position(pos => pos
+        .My(HorizontalAlignment.Center, VerticalAlignment.Center)
+        .At(HorizontalAlignment.Center, VerticalAlignment.Center)
+        .Of(new JS("window"))
+        )
+        )
+        )
+        .Columns(columns =>
+        {
+            columns.AddFor(m => m.UserName).Caption("Username").AllowEditing(true);
+            columns.AddFor(m => m.Email).Caption("Email").AllowEditing(false);
+            columns.AddFor(m => m.Roles).Caption("Roles").AllowEditing(true); // Do not allow editing of roles in grid
+            columns.AddFor(m => m.EmailConfirmed).Caption("Email Confirmed").DataType(GridColumnDataType.Boolean).AllowEditing(false);
+            columns.AddFor(m => m.PhoneNumberConfirmed).Caption("Phone Number Confirmed").DataType(GridColumnDataType.Boolean).AllowEditing(false);
+            columns.AddFor(m => m.LockoutEnabled).Caption("Account Locked").DataType(GridColumnDataType.Boolean).AllowEditing(true);
+            columns.AddFor(m => m.PhoneNumber).Caption("Phone Number").AllowEditing(false);
+
+            
+
+            // Manage Button Column (for Edit/Delete)
+            columns.Add()
+            .Type(GridCommandColumnType.Buttons)
+            .Width(80)
+            .Caption("Manage")
+            .Name("ManageButton")
+            .Buttons(b =>
+            {
+                b.Add().Name(GridColumnButtonName.Edit).Hint("Edit");
+                b.Add().Name(GridColumnButtonName.Delete).Hint("Delete");
+            });
+
+        })
+        )
+</div>
+
+<script>
+    // Get the selected role ID
+    function getRoleId() {
+        var roleId = $("#txt_role").dxSelectBox('option', 'value');
+        return roleId;
+    }
+</script>

@@ -1,0 +1,126 @@
+﻿@using DevExtreme.AspNet.Mvc
+@using PANDOLLAR.Areas.CoreSystem.Models
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Activity Logs";
+}
+
+<!-- Section Title Card -->
+<div class="card col-12 card-title">
+    <center><span><i data-feather="users"></i> ACTIVITY LOGS</span></center>
+</div>
+
+<!-- Section Search for the Company-->
+<div class="row">
+    <div class="form-group col-md-4">
+        <label class="my-3">Company Name:</label>
+        @(Html.DevExtreme().SelectBox()
+            .DataSource(d => d.Mvc().Controller("CompaniesAPI").LoadAction("Get").Key("CompanyId"))
+            .DisplayExpr("CompanyName")
+            .ValueExpr("CompanyId")
+            .SearchEnabled(true)
+            .ShowClearButton(true)
+            .Placeholder("Select Company")
+            .Width("100%")
+            .ID("txt_company")
+            .OnValueChanged(@<text>
+            function(e){
+            // Refresh the grid when the company is changed
+            const grid = $('#gv_auditLogList').dxDataGrid('instance');
+            grid.refresh();  // Triggers a reload with the updated parameters
+            }
+        </text>))
+    </div>
+</div>
+
+<!-- DevExtreme DataGrid for Activity Logs -->
+<div id="auditLogGrid">
+    @(Html.DevExtreme().DataGrid<AuditLog>()
+        .ShowBorders(true)
+        .ID("gv_auditLogList")
+        .DataSource(d => d.Mvc().Controller("AuditLogsAPI").LoadAction("Get").Key("AuditLogId")
+        .LoadParams(new { CompanyId = new JS("getCompanyId") }))
+        .ShowColumnLines(false)
+        .ShowRowLines(true)
+        .RowAlternationEnabled(true)
+        .ColumnHidingEnabled(true)
+        .ColumnAutoWidth(true)
+        .Selection(s => s.Mode(SelectionMode.Multiple))
+        .SearchPanel(s => s.Visible(true).Width(250).Placeholder("Search..."))
+        .FocusedRowEnabled(true)
+        .Paging(p => p.PageSize(10))
+        .RemoteOperations(true)
+        .Editing(e => e
+        .AllowAdding(false)  // Allow adding new logs
+        .AllowUpdating(false)  // Allow updating existing logs
+        .AllowDeleting(true)  // Allow deleting logs
+        .UseIcons(true) // Use Icons
+        .Mode(GridEditMode.Popup)
+        .Popup(p => p
+        .Title("Activity Log")
+        .Height(450)
+        .ShowTitle(true)
+        .Position(pos => pos
+        .My(HorizontalAlignment.Center, VerticalAlignment.Center)
+        .At(HorizontalAlignment.Center, VerticalAlignment.Center)
+        .Of(new JS("window"))
+        )
+        )
+        )
+        .Columns(columns =>
+        {
+            // Add column for Companies
+            columns.AddFor(m => m.Company.CompanyName).Caption("Company Name").Visible(true).AllowEditing(false);
+
+            // Add column for Users
+            columns.AddFor(m => m.User.UserName).Caption("User Name").Visible(true).AllowEditing(false);
+
+            columns.AddFor(m => m.EventType).Caption("Event Type");
+            columns.AddFor(m => m.EntityAffected).Caption("Entity Affected");
+            columns.AddFor(m => m.OldValue).Caption("Old Value");
+            columns.AddFor(m => m.NewValue).Caption("New Value");
+            columns.AddFor(m => m.ComplianceStatus).Caption("Compliance Status");
+            columns.AddFor(m => m.AuditLogId).Visible(false);  // Hide AuditLogId
+            columns.AddFor(m => m.Timestamp).Caption("Timestamp").DataType(GridColumnDataType.Date).Format("MM/dd/yyyy HH:mm:ss");
+            columns.AddFor(m => m.Details).Caption("Details");
+            columns.AddFor(m => m.IpAddress).Caption("IP Address");
+            columns.AddFor(m => m.DeviceInfo).Caption("Device Info");
+
+            // Add columns for Companies
+            columns.AddFor(m => m.Company.CompanyEmail).Caption("Company Email").Visible(true).AllowEditing(false);
+            columns.AddFor(m => m.Company.CompanyPhone).Caption("Company Phone").Visible(true).AllowEditing(false);
+
+            // Add column for Users
+            columns.AddFor(m => m.User.Email).Caption("User Email").Visible(true).AllowEditing(false);
+            columns.AddFor(m => m.User.PhoneNumber).Caption("User PhoneNumber").Visible(true).AllowEditing(false);
+
+            // Manage Button Column (for Edit/Delete)
+            columns.Add()
+            .Type(GridCommandColumnType.Buttons)
+            .Width(80)
+            .Caption("Manage")
+            .Name("ManageButton")
+            .Buttons(b =>
+            {
+                // b.Add().Name(GridColumnButtonName.Edit).Hint("Edit");
+                b.Add().Name(GridColumnButtonName.Delete).Hint("Delete");
+            });
+
+        })
+        )
+</div>
+
+<script>
+    // Handling row change for the client grid
+    function onMainRowChanged(e) {
+        const rowData = e.row && e.row.data;
+        // You can add your custom logic here to handle row change
+    }
+
+    // Get the selected company ID
+    function getCompanyId() {
+        var companyId = $("#txt_company").dxSelectBox('option', 'value');
+        return companyId;
+    }
+</script>

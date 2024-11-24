@@ -1,0 +1,187 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="wrapper">
+    <!-- Sidebar Section -->
+    <nav id="sidebar" class="sidebar js-sidebar">
+        <div class="sidebar-content js-simplebar">
+            <!-- Sidebar Brand (Logo) -->
+            <a class="sidebar-brand" href="/">
+                <center><span class="align-middle">PANDOLLAR </span></center>
+            </a>
+
+            <!-- Sidebar Navigation Menu -->
+            <ul class="sidebar-nav">
+
+                <!-- Section Header: SYSTEM SETTINGS -->
+                <li class="sidebar-header">
+                    SYSTEM MANAGER
+                </li>
+
+                <!-- Sidebar Item: Dashboard -->
+                <li class="sidebar-item @((Context.Request.Path.Value.Contains("SystemManager")) ? "active" : "")">
+                    <a class="sidebar-link" href="SystemManager">
+                        <i class="align-middle" data-feather="sliders"></i> <span class="align-middle">Dashboard</span>
+                    </a>
+                </li>
+
+                <!-- Sidebar Item: Company Info -->
+                <!-- Sidebar Item: Company Info -->
+                <li class="sidebar-item @((Context.Request.Path.Value.Contains("Company")) ? "active" : "")">
+                    <a class="sidebar-link" href="Company">
+                        <i class="align-middle" data-feather="briefcase"></i> <span class="align-middle">Company Info</span>
+                    </a>
+                </li>
+
+                <!-- Sidebar Item: Clients -->
+                <li class="sidebar-item @((Context.Request.Path.Value.Contains("Clients")) ? "active" : "")">
+                    <a class="sidebar-link" href="Clients">
+                        <i class="align-middle" data-feather="users"></i> <span class="align-middle">Clients</span>
+                    </a>
+                </li>
+
+                <!-- Sidebar Item: Feedback -->
+                <li class="sidebar-item @((Context.Request.Path.Value.Contains("Feedback")) ? "active" : "")">
+                    <a class="sidebar-link" href="Feedback">
+                        <i class="align-middle" data-feather="edit-2"></i> <span class="align-middle">Feedback</span>
+                    </a>
+                </li>
+
+                <!-- Sidebar Item: Data Migration -->
+                <li class="sidebar-item @((Context.Request.Path.Value.Contains("DataMigrations")) ? "active" : "")">
+                    <a class="sidebar-link" href="DataMigrations">
+                        <i class="align-middle" data-feather="arrow-right-circle"></i> <span class="align-middle">Data Migration</span>
+                    </a>
+                </li>
+
+                <!-- Section Header: SECURITY CENTRE -->
+                <li class="sidebar-header">
+                    SECURITY CENTRE
+                </li>
+
+                <!-- Sidebar Item: User Accounts -->
+                <li class="sidebar-item @((Context.Request.Path.Value.Contains("UserAccounts")) ? "active" : "")">
+                    <a class="sidebar-link" href="UserAccounts">
+                        <i class="align-middle" data-feather="user"></i> <span class="align-middle">User Accounts</span>
+                    </a>
+                </li>
+
+                <!-- Sidebar Item: Activity Log -->
+                <li class="sidebar-item @((Context.Request.Path.Value.Contains("AuditLogs")) ? "active" : "")">
+                    <a class="sidebar-link" href="AuditLogs">
+                        <i class="align-middle" data-feather="list"></i> <span class="align-middle">Activity Log</span>
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content Section -->
+    <div class="main">
+        <!-- Navbar Section -->
+        <nav class="navbar navbar-expand navbar-light navbar-bg">
+            <!-- Sidebar Toggle Button -->
+            <a class="sidebar-toggle js-sidebar-toggle">
+                <i class="hamburger align-self-center"></i>
+            </a>
+
+            <div class="navbar-collapse collapse">
+                <ul class="navbar-nav navbar-align">
+
+                    <!-- Notification Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-icon dropdown-toggle" href="#" id="alertsDropdown" data-bs-toggle="dropdown">
+                            <div class="position-relative">
+                                <i class="align-middle" data-feather="bell"></i>
+                                <span class="indicator">4</span> <!-- Notification Count -->
+                            </div>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end py-0" aria-labelledby="alertsDropdown">
+                            <div class="dropdown-menu-header">
+                                4 New Notifications
+                            </div>
+                            <div class="list-group">
+                                <!-- Example Notification: Update Completed -->
+                                <a href="#" class="list-group-item">
+                                    <div class="row g-0 align-items-center">
+                                        <div class="col-2">
+                                            <i class="text-danger" data-feather="alert-circle"></i>
+                                        </div>
+                                        <div class="col-10">
+                                            <div class="text-dark">Update completed</div>
+                                            <div class="text-muted small mt-1">Restart server 12 to complete the update.</div>
+                                            <div class="text-muted small mt-1">30m ago</div>
+                                        </div>
+                                    </div>
+                                </a>
+
+                                <!-- Example Notification: Login from IP -->
+                                <a href="#" class="list-group-item">
+                                    <div class="row g-0 align-items-center">
+                                        <div class="col-2">
+                                            <i class="text-primary" data-feather="home"></i>
+                                        </div>
+                                        <div class="col-10">
+                                            <div class="text-dark">Login from 192.186.1.8</div>
+                                            <div class="text-muted small mt-1">5h ago</div>
+                                        </div>
+                                    </div>
+                                </a>
+
+                            </div>
+                            <div class="dropdown-menu-footer">
+                                <a href="#" class="text-muted">Show all notifications</a>
+                            </div>
+                        </div>
+                    </li>
+
+                    <!-- User Account Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-icon dropdown-toggle d-inline-block d-sm-none" href="#" data-bs-toggle="dropdown">
+                            <i class="align-middle" data-feather="settings"></i>
+                        </a>
+
+                        <a class="nav-link dropdown-toggle" href="UserProfile" data-bs-toggle="dropdown">
+                            <!-- User Avatar and Name -->
+                            <img src="~/img/userProfileImages/team-1.jpg" class="avatar img-fluid rounded me-1" alt="Profile-img" />
+                            <span>Asia Nabatanzi</span> <!-- Full name of the logged-in user -->
+                        </a>
+
+
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a class="dropdown-item" href="Profile"><i class="align-middle me-1" data-feather="user"></i> Profile</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#"><i class="align-middle me-1" data-feather="help-circle"></i> Help Center</a>
+                            <div class="dropdown-divider"></div>
+                            <!-- Log out option -->
+                            <a class="dropdown-item" href="javascript:;" onclick="Logout()"><i class="align-middle me-1" data-feather="log-in"></i> Log out</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="content">
+            <div class="container-fluid p-0">
+                <!-- Render Body Content -->
+                @RenderBody() <!-- This is where the content of the current view will be injected -->
+            </div>
+        </main>
+
+        <!-- Footer Section -->
+        <footer class="footer">
+            <div class="container-fluid">
+                <div class="row text-muted">
+                    <div class="col-12 text-start">
+                        <p class="mb-0" style="color: #565e64; ">
+                            <script>document.write(new Date().getFullYear() + ' Pandollar' );</script>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+</div>

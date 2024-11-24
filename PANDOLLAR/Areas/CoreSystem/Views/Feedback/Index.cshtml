@@ -1,0 +1,128 @@
+﻿@using DevExtreme.AspNet.Mvc
+@using PANDOLLAR.Areas.CoreSystem.Models
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Customer Feedback";
+}
+
+<!-- Section Title Card -->
+<div class="card col-12 card-title">
+    <center><span><i data-feather="edit-2"></i> CUSTOMER FEEDBACK</span></center>
+</div>
+
+<!-- Section Search for the Company-->
+<div class="row">
+    <div class="form-group col-md-4">
+        <label class="my-3">Company Name:</label>
+        @(Html.DevExtreme().SelectBox()
+            .DataSource(d => d.Mvc().Controller("CompaniesAPI").LoadAction("Get").Key("CompanyId"))
+            .DisplayExpr("CompanyName")
+            .ValueExpr("CompanyId")
+            .SearchEnabled(true)
+            .ShowClearButton(true)
+            .Placeholder("Select Company")
+            .Width("100%")
+            .ID("txt_company")
+            .OnValueChanged(@<text>
+            function(e){
+            // Refresh the grid when the company is changed
+            const grid = $('#gv_feedbackList').dxDataGrid('instance');
+            grid.refresh();  // Triggers a reload with the updated parameters
+            }
+        </text>)
+            )
+    </div>
+</div>
+
+<!-- DevExtreme DataGrid for Feedbacks -->
+<div id="feedbackGrid">
+    @(
+        Html.DevExtreme().DataGrid<Feedback>()
+        .ShowBorders(true)
+        .ID("gv_feedbackList")
+        .DataSource(d => d.Mvc().Controller("FeedbacksAPI").LoadAction("Get").Key("FeedbackId")
+        .InsertAction("Post")
+        .UpdateAction("Put")
+        .DeleteAction("Delete")
+        .LoadParams(new { CompanyId = new JS("getCompanyId") }))
+        .ShowColumnLines(false)
+        .ShowRowLines(true)
+        .RowAlternationEnabled(true)
+        .ColumnHidingEnabled(true)
+        .ColumnAutoWidth(true)
+        .Selection(s => s.Mode(SelectionMode.Multiple))
+        .SearchPanel(s => s.Visible(true).Width(250).Placeholder("Search..."))
+        .FocusedRowEnabled(true)
+        .Paging(p => p.PageSize(10))
+        .RemoteOperations(true)
+        .Summary(s => s.TotalItems(totalItems => { totalItems.AddFor(m => m.FeedbackId).SummaryType(SummaryType.Count); }))
+        .Editing(e => e
+        .AllowAdding(false)  // Disable adding new feedback
+        .AllowUpdating(false)  // Allow editing feedback
+        .AllowDeleting(true)  // Allow deleting feedback
+        .UseIcons(true) // Use Icons
+        .Mode(GridEditMode.Popup)
+        .Popup(p => p
+        .Title("Customer Feedback")
+        .Height(450)
+        .ShowTitle(true)
+        .Position(pos => pos
+        .My(HorizontalAlignment.Center, VerticalAlignment.Center)
+        .At(HorizontalAlignment.Center, VerticalAlignment.Center)
+        .Of(new JS("window"))
+        )
+        )
+        )
+        .Sorting(s => s
+        .Mode(GridSortingMode.Multiple)  // Allows sorting by multiple columns
+        )
+        .Columns(columns =>
+        {
+            // Add column for Users
+            columns.AddFor(m => m.User.UserName).Caption("User Name").Visible(true).AllowEditing(false);
+
+            // Feedbacks Data Columns
+            // Hide the FeedbackId  columns.AddFor(m => m.FeedbackId).Visible(false);
+            // Hide the UserId  columns.AddFor(m => m.UserId).Caption("User ID").Visible(false);
+            columns.AddFor(m => m.FeedbackText).Caption("Feedback").AllowEditing(false);
+            columns.AddFor(m => m.Rating).Caption("Rating").AllowEditing(false);
+            columns.AddFor(m => m.Category).Caption("Category").AllowEditing(false);
+            columns.AddFor(m => m.SubmittedAt).Caption("Submitted At").Format("MM/dd/yyyy").AllowEditing(false);
+
+            // --> System Administrator can only resolve feedback not editing them.
+            columns.AddFor(m => m.Resolved).Caption("Resolved").DataType(GridColumnDataType.Boolean).AllowEditing(true);
+
+            // Add column for Users
+            columns.AddFor(m => m.User.Email).Caption("User Email").Visible(true).AllowEditing(false);
+            columns.AddFor(m => m.User.PhoneNumber).Caption("User PhoneNumber").Visible(true).AllowEditing(false);
+
+            // Manage Button Column (for Edit/Delete)
+            columns.Add()
+            .Type(GridCommandColumnType.Buttons)
+            .Width(80)
+            .Caption("Manage")
+            .Name("ManageButton")
+            .Buttons(b =>
+            {
+                // b.Add().Name(GridColumnButtonName.Edit).Hint("Edit");
+                b.Add().Name(GridColumnButtonName.Delete).Hint("Delete");
+            });
+
+        })
+        )
+</div>
+
+<script>
+    // Handling row change for the client grid
+    function onMainRowChanged(e) {
+        const rowData = e.row && e.row.data;
+        // You can add your custom logic here to handle row change
+    }
+
+    // Get the selected company ID
+    function getCompanyId() {
+        var companyId = $("#txt_company").dxSelectBox('option', 'value');
+        return companyId;
+    }
+</script>

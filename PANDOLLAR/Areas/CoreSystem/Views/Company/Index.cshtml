@@ -1,0 +1,192 @@
+﻿@using DevExtreme.AspNet.Mvc
+@using PANDOLLAR.Areas.CoreSystem.Models
+
+<!-- Inheriting the System Administrator layout  -->
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Company Info";
+}
+
+
+<!-- Section Title Card -->
+<div class="card col-12 card-title">
+    <center><span><i data-feather="briefcase"></i> COMPANY INFORMATION</span></center>
+</div>
+
+<div class="card" style="padding:20px">
+    @(Html.DevExtreme().DataGrid<Company>()
+            .ShowBorders(true)
+            .ID("gv_companyList")
+            .DataSource(d => d.Mvc().Controller("CompaniesAPI").LoadAction("Get").Key("CompanyId")
+            .InsertAction("Post")
+            .UpdateAction("Put")
+            .DeleteAction("Delete"))
+            .ShowColumnLines(false)
+            .ShowRowLines(true)
+            .RowAlternationEnabled(true)
+            .ColumnHidingEnabled(true)
+            .ColumnAutoWidth(true)
+            .OnFocusedRowChanged("onMainRowChanged")
+            .OnInitNewRow("intiateNewCompany")
+            .Columns(columns =>
+            {
+                // Company Data Columns
+                columns.AddFor(m => m.CompanyName);
+                columns.AddFor(m => m.CreatedAt).Format("dd MMM, yyyy").AllowEditing(false);
+                columns.AddFor(m => m.ExpDate).Format("dd MMM, yyyy");
+                columns.AddFor(m => m.CompanyEmail);
+                columns.AddFor(m => m.CompanyPhone);
+                columns.AddFor(m => m.Motto);
+                columns.AddFor(m => m.CompanyType);
+                columns.AddFor(m => m.ContactPerson);
+                columns.AddFor(m => m.CompanyInitials);
+                columns.AddFor(m => m.PayAccount);
+                columns.AddFor(m => m.PayAccountName);
+                columns.AddFor(m => m.PayBank);
+                columns.AddFor(m => m.SmsAccount);
+                columns.AddFor(m => m.SubscriptionAmount);
+                // columns.AddFor(m => m.CompanyLogoFilePath);
+                // Add column for Address --a foreign key in Company Model
+                columns.AddFor(m => m.Address.Street);
+                columns.AddFor(m => m.Address.City);
+                columns.AddFor(m => m.Address.State);
+                columns.AddFor(m => m.Address.PostalCode);
+                columns.AddFor(m => m.Address.Country);
+
+                // Manage Button Column (for Edit/Delete)
+                columns.Add()
+    .Type(GridCommandColumnType.Buttons)
+    .Width(80)
+    .Caption("Manage")
+    .Name("ManageButton")
+    .Buttons(b =>
+    {
+                b.Add().Name(GridColumnButtonName.Edit).Hint("Edit");
+                b.Add().Name(GridColumnButtonName.Delete).Hint("Delete");
+            });
+            })
+        .Selection(s => s.Mode(SelectionMode.Multiple))
+        .SearchPanel(s => s.Visible(true).Width(250).Placeholder("Search..."))
+        .FocusedRowEnabled(true)
+        .Editing(e => e
+        .AllowAdding(true)
+        .AllowUpdating(true)
+        .AllowDeleting(true)
+        .UseIcons(true)
+        .Mode(GridEditMode.Popup)
+        .Popup(p => p
+        .Title("Company Profile")
+        .Height(550)
+        .ShowTitle(true)
+        .Position(pos => pos
+        .My(HorizontalAlignment.Center, VerticalAlignment.Center)
+        .At(HorizontalAlignment.Center, VerticalAlignment.Center)
+        .Of(new JS("window"))
+        )
+        )
+        .Form(f => f.Items(items =>
+        {
+
+            // Group 1: Company Information
+            items.AddGroup()
+            .Caption("Company Information")
+            .ColCount(2)
+            .ColSpan(2)
+            .Items(groupItems =>
+            {
+                groupItems.AddSimpleFor(m => m.CompanyName).Visible(true);
+                groupItems.AddSimpleFor(m => m.CompanyStatus).Visible(true);
+                groupItems.AddSimpleFor(m => m.CompanyInitials).Visible(true);
+                groupItems.AddSimpleFor(m => m.Motto).Visible(true);
+                groupItems.AddSimpleFor(m => m.CreatedAt).Visible(true);
+                groupItems.AddSimpleFor(m => m.ExpDate).Visible(true);
+            });
+
+            // Group 2: Contact Information
+            items.AddGroup()
+            .Caption("Contact Information")
+            .ColCount(2)
+            .ColSpan(2)
+            .Items(groupItems =>
+            {
+                groupItems.AddSimpleFor(m => m.ContactPerson).Visible(true);
+                groupItems.AddSimpleFor(m => m.CompanyEmail).Visible(true);
+                groupItems.AddSimpleFor(m => m.CompanyPhone).Visible(true);
+                groupItems.AddSimpleFor(m => m.SmsAccount).Visible(true);
+            });
+
+            // Group 3: Payment & Account Information
+            items.AddGroup()
+            .Caption("Payment & Account Information")
+            .ColCount(2)
+            .ColSpan(2)
+            .Items(groupItems =>
+            {
+                groupItems.AddSimpleFor(m => m.SubscriptionAmount).Visible(true);
+                groupItems.AddSimpleFor(m => m.PayAccount).Visible(true);
+                groupItems.AddSimpleFor(m => m.PayAccountName).Visible(true);
+                groupItems.AddSimpleFor(m => m.PayBank).Visible(true);
+            });
+
+            // Group 4: Company Logo
+            items.AddGroup()
+            .Caption("Company Logo")
+            .ColCount(1)
+            .ColSpan(2)
+            .Items(groupItems =>
+            {
+                groupItems.AddSimpleFor(m => m.CompanyLogo).Visible(true);
+            });
+
+            // Group 5: Company Address
+            items.AddGroup()
+            .Caption("Company Address")
+            .ColCount(2)
+            .ColSpan(2)
+            .Items(groupItems =>
+            {
+                groupItems.AddSimpleFor(m => m.Address.AddressId).Visible(false);
+                groupItems.AddSimpleFor(m => m.Address.Street).Visible(true);
+                groupItems.AddSimpleFor(m => m.Address.City).Visible(true);
+                groupItems.AddSimpleFor(m => m.Address.State).Visible(true);
+                groupItems.AddSimpleFor(m => m.Address.PostalCode).Visible(true);
+                groupItems.AddSimpleFor(m => m.Address.Country).Visible(true);
+            });
+
+        }))
+        )
+        .Paging(p => p.PageSize(10))
+        .RemoteOperations(true)
+        .Summary(s => s
+        .TotalItems(totalItems =>
+        {
+            totalItems.AddFor(m => m.CompanyName).SummaryType(SummaryType.Count);
+        })
+        )
+        )
+</div>
+
+<script>
+
+    $(function () {
+        // Initialize DataGrid component
+        $('#gv_companyList').dxDataGrid({
+            // Any additional setup code for DataGrid can be added here
+        });
+    });
+
+    // Event handler for focused row change
+    function onMainRowChanged(e) {
+        // Handle logic when the focused row changes (currently no logging)
+    }
+
+    // Event handler for initiating a new company
+    function intiateNewCompany(e) {
+        // Handle the initialization of new company (currently no logging)
+        var company = e.data;
+        if (!company.AddressId) {
+            // Address ID missing, can trigger further actions if necessary
+        }
+    }
+
+</script>

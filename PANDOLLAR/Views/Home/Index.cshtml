@@ -1,0 +1,118 @@
+@using PANDOLLAR.Models
+
+<div class="container-fluid position-relative d-flex p-0 h-100" style="background: linear-gradient(to bottom, rgba(34, 139, 34, 0.4), rgba(255, 255, 255, 0));">
+	<div class="container-fluid">
+		<div class="row justify-content-center align-items-center h-100">
+			<!-- Column for the login card -->
+			<div class="col-sm-10 col-md-4 col-lg-3 mx-auto">
+				<!-- Logo section -->
+				<div class="text-center mt-4">
+					<h3>PANDOLLAR</h3>
+				</div>
+				<!-- Card for the login form -->
+				<div class="card shadow">
+					<div class="card-body">
+						<!-- Welcome message -->
+						<h5 class="text-center mb-4">Welcome Back</h5>
+						<div class="m-sm-3">
+							<form>
+								<!-- Email input field -->
+								<div class="mb-3">
+									<label class="form-label" for="txt_username">Email</label>
+									@(Html.DevExtreme().TextBox()
+									.Width("100%")
+									.Height(40)
+									.ID("textEmail")
+									.Placeholder("Enter your email")
+									)
+								</div>
+								<!-- Password input field -->
+								<div class="mb-3">
+									<label class="form-label" for="txt_password">Password</label>
+									@(Html.DevExtreme().TextBox()
+									.Width("100%")
+									.Height(40)
+									.Mode(TextBoxMode.Password)
+									.ID("textPassword")
+									.Placeholder("Enter your password")
+									)
+								</div>
+								<!-- Forgot password link -->
+								<div class="mb-3 text-end">
+									<a class="form-check-label text-small" href="javascript:;" onclick="reset()">Forgot Password?</a>
+								</div>
+								<!-- Login button -->
+								<div class="d-grid gap-2 mt-4">
+									@(Html.DevExtreme().Button()
+										.Text("LOGIN")
+										.Type(ButtonType.Default)
+										.Icon("arrowright")
+										.StylingMode(ButtonStylingMode.Outlined)
+										.Width("100%")
+										.Height(40)
+										.OnClick("loginProc")
+										)
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+
+				<!-- Footer with copyright information -->
+				<div class="text-center mb-3">
+					<p class="mt-3" style="font-size:11px;">&copy; <script>document.write(new Date().getFullYear() + ' PANDOLLAR');</script></p>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	function loginProc() {
+		// Retrieve values from the input fields
+		var username = $("#textEmail").dxTextBox('option', 'value');
+		var password = $("#textPassword").dxTextBox('option', 'value');
+
+		// Define the API endpoint
+		const url = 'api/LoginAPI/LoginCheck';
+
+		// Prepare the data to be sent
+		const data = { email: username, password: password }; // Use 'email' as the key
+
+		// Show loading indicator
+		Notiflix.Loading.Pulse('Authenticating...');
+
+		// Make the API call using jQuery's getJSON method
+		$.getJSON(url, data)
+			.done(function (json) {
+				// Remove loading indicator
+				Notiflix.Loading.Remove(500);
+
+				// Check if the login was successful
+				if (json.success) {
+					// Perform actions based on success
+					// Notiflix.Report.Success("Login Success", json.mresponse);
+
+					// Redirect to the appropriate page based on the redirectTo value
+					if (json.redirectUrl) {
+						window.location.href = json.redirectUrl;  // Redirect to the specified URL
+					} else {
+						// Default behavior if no redirection URL is provided
+						window.location.href = "/"; // or another default page like "/home"
+					}
+
+				} else {
+					// Report failure if login was unsuccessful
+					Notiflix.Report.Failure("Login Failure", json.mresponse, "OK");
+				}
+			})
+			.fail(function (jqxhr, textStatus, error) {
+				// Remove loading indicator on failure
+				Notiflix.Loading.Remove(500);
+
+				// Handle the error case
+				var err = textStatus + ", " + error;
+				Notiflix.Report.Failure("Failure", "Login failed: " + err, "OK");
+			});
+	}
+</script>
