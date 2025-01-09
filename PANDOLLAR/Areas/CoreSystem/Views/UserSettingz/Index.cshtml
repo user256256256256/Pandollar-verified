@@ -1,0 +1,37 @@
+﻿@using DevExtreme.AspNet.Mvc
+@using PANDOLLAR.Areas.CoreSystem.Models
+@model AspNetUser
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "User Settings";
+
+    // Get the current theme from cookies
+    var themeCookie = Context.Request.Cookies["theme"];
+}
+
+<div class="section my-3">
+    <h2 class="section-title">User Settings</h2>
+    <p class="section-lead">Manage your user settings here.</p>
+</div>
+
+<div class="user-settings">
+    <h4 class="setting-title">Select Theme:</h4>
+    <div class="custom-control custom-switch">
+        <input type="checkbox" class="custom-control-input" id="themeToggle" @(themeCookie == "dark" ? "checked" : "")>
+        <label class="custom-control-label" for="themeToggle">Dark Theme</label>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        // This function will change the theme based on the toggle state
+        $("#themeToggle").change(function () {
+            var theme = $(this).prop('checked') ? "dark" : "light"; // Get the theme based on toggle state
+            var expires = new Date();
+            expires.setFullYear(expires.getFullYear() + 10); // Set cookie expiry 10 years in the future
+            document.cookie = "theme=" + theme + "; path=/; expires=" + expires.toUTCString(); // Set the theme cookie
+            location.reload(); // Reload the page to apply the new theme
+        });
+    });
+</script>

@@ -1,5 +1,7 @@
-﻿@using DevExtreme.AspNet.Mvc
+﻿@using PANDOLLAR.Models
+@using DevExtreme.AspNet.Mvc
 @using PANDOLLAR.Areas.CoreSystem.Models
+@model AspNetUser
 
 @{
     Layout = "_Layout";
@@ -11,7 +13,8 @@
     <center><span><i data-feather="users"></i> CLIENT INFORMATION</span></center>
 </div>
 
-<div class="row">
+<!-- Filter by Company-->
+<div class="row mb-3">
     <div class="form-group col-md-4">
         <label class="my-3">Company Name:</label>
         @(Html.DevExtreme().SelectBox()
@@ -34,7 +37,7 @@
 </div>
 
 <!-- Client List DataGrid -->
-<div class="card" style="padding:20px">
+<div class="card p-3" >
     @(Html.DevExtreme().DataGrid<CompanyClient>()
         .ShowBorders(true)
         .ID("gv_clientList")
@@ -46,6 +49,9 @@
         .ShowColumnLines(false)
         .ShowRowLines(true)
         .RowAlternationEnabled(true)
+        .FilterRow(f => f.Visible(false))
+        .HeaderFilter(f => f.Visible(true))
+        .RemoteOperations(true)
         .ShowBorders(true)
         .ColumnHidingEnabled(true)
         .ColumnAutoWidth(true)
@@ -81,6 +87,7 @@
                 b.Add().Name(GridColumnButtonName.Edit).Hint("Edit");
                 b.Add().Name(GridColumnButtonName.Delete).Hint("Delete");
             });
+      
         })
         .Selection(s => s.Mode(SelectionMode.Multiple))
         .SearchPanel(s => s.Visible(true).Width(250).Placeholder("Search..."))
@@ -135,8 +142,10 @@
             totalItems.AddFor(m => m.ClientName).SummaryType(SummaryType.Count);
         })
         )
+        
         )
 </div>
+
 
 <script>
     // Handling row change for the client grid

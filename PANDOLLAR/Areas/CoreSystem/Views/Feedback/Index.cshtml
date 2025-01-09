@@ -1,5 +1,6 @@
 ﻿@using DevExtreme.AspNet.Mvc
 @using PANDOLLAR.Areas.CoreSystem.Models
+@model AspNetUser
 
 @{
     Layout = "_Layout";
@@ -12,7 +13,7 @@
 </div>
 
 <!-- Section Search for the Company-->
-<div class="row">
+<div class="row mb-3">
     <div class="form-group col-md-4">
         <label class="my-3">Company Name:</label>
         @(Html.DevExtreme().SelectBox()
@@ -36,7 +37,7 @@
 </div>
 
 <!-- DevExtreme DataGrid for Feedbacks -->
-<div id="feedbackGrid">
+<div class="card p-3" id="feedbackGrid">
     @(
         Html.DevExtreme().DataGrid<Feedback>()
         .ShowBorders(true)
@@ -49,6 +50,9 @@
         .ShowColumnLines(false)
         .ShowRowLines(true)
         .RowAlternationEnabled(true)
+        .FilterRow(f => f.Visible(false))
+        .HeaderFilter(f => f.Visible(true))
+        .RemoteOperations(true)
         .ColumnHidingEnabled(true)
         .ColumnAutoWidth(true)
         .Selection(s => s.Mode(SelectionMode.Multiple))
@@ -59,7 +63,7 @@
         .Summary(s => s.TotalItems(totalItems => { totalItems.AddFor(m => m.FeedbackId).SummaryType(SummaryType.Count); }))
         .Editing(e => e
         .AllowAdding(false)  // Disable adding new feedback
-        .AllowUpdating(false)  // Allow editing feedback
+        .AllowUpdating(true)  // Allow editing feedback
         .AllowDeleting(true)  // Allow deleting feedback
         .UseIcons(true) // Use Icons
         .Mode(GridEditMode.Popup)
@@ -105,15 +109,24 @@
             .Name("ManageButton")
             .Buttons(b =>
             {
-                // b.Add().Name(GridColumnButtonName.Edit).Hint("Edit");
+                b.Add().Name(GridColumnButtonName.Edit).Hint("Edit");
                 b.Add().Name(GridColumnButtonName.Delete).Hint("Delete");
             });
 
         })
+        .Paging(p => p.PageSize(10))
+        .Summary(s => s
+        .TotalItems(totalItems =>
+        {
+            totalItems.AddFor(m => m.FeedbackText).SummaryType(SummaryType.Count);
+        })
+        )
+
         )
 </div>
 
 <script>
+
     // Handling row change for the client grid
     function onMainRowChanged(e) {
         const rowData = e.row && e.row.data;

@@ -11,17 +11,20 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using PANDOLLAR.Areas.CoreSystem.Models;
 using Newtonsoft.Json.Linq;
+using PANDOLLAR.Areas.CoreSystem.Models;
+using PANDOLLAR.Data;
+using PANDOLLAR.Models;
+using Microsoft.Data.SqlClient;
 
-namespace MedisatERP.Controllers
+namespace PANDOLLAR.Controllers
 {
     [Route("api/[controller]/[action]")]
     public class CompanyClientsAPIController : Controller
     {
-        private PandollarDbContext _context;
+        private PandollarDbContext  _context;
 
-        public CompanyClientsAPIController(PandollarDbContext context)
+        public CompanyClientsAPIController(PandollarDbContext  context)
         {
             _context = context;
         }
@@ -35,40 +38,65 @@ namespace MedisatERP.Controllers
         [HttpGet]
         public async Task<IActionResult> Get(DataSourceLoadOptions loadOptions, Guid companyId)
         {
-            var companyclients = _context.CompanyClients
-                .Include(c => c.Address) // Ensure Address data is eagerly loaded
-                .Select(i => new
-                {
-                    i.ClientId,
-                    i.CompanyId,
-                    i.ClientName,
-                    i.DateOfBirth,
-                    i.Gender,
-                    i.Email,
-                    i.PhoneNumber,
-                    i.AddressId,
-                    i.EmergencyContactName,
-                    i.EmergencyContactPhone,
-                    i.MaritalStatus,
-                    i.Nationality,
-                    i.CreatedAt,
-                    i.UpdatedAt,
-                    Address = new
+            try
+            {
+                var companyclients = _context.CompanyClients
+                    .Include(c => c.Address) // Ensure Address data is eagerly loaded
+                    .Select(i => new
                     {
-                        i.Address.AddressId,
-                        i.Address.Street,
-                        i.Address.City,
-                        i.Address.State,
-                        i.Address.PostalCode,
-                        i.Address.Country,
-                    }
-                }).Where(a => a.CompanyId == companyId).OrderBy(a => a.ClientId);
+                        i.ClientId,
+                        i.CompanyId,
+                        i.ClientName,
+                        i.DateOfBirth,
+                        i.Gender,
+                        i.Email,
+                        i.PhoneNumber,
+                        i.AddressId,
+                        i.EmergencyContactName,
+                        i.EmergencyContactPhone,
+                        i.MaritalStatus,
+                        i.Nationality,
+                        i.CreatedAt,
+                        i.UpdatedAt,
+                        Address = new
+                        {
+                            i.Address.AddressId,
+                            i.Address.Street,
+                            i.Address.City,
+                            i.Address.State,
+                            i.Address.PostalCode,
+                            i.Address.Country,
+                        }
+                    }).Where(a => a.CompanyId == companyId).OrderBy(a => a.ClientId);
 
-            // Apply filetering, sorting, anf paging using DataSourceLoader
-            var transformedData = await DataSourceLoader.LoadAsync(companyclients, loadOptions);
+                // Apply filtering, sorting, and paging using DataSourceLoader
+                var transformedData = await DataSourceLoader.LoadAsync(companyclients, loadOptions);
 
-            return Json(transformedData); // Return the processed data
+                return Json(transformedData); // Return the processed data
+            }
+            catch (SqlException ex)
+            {
+                // Log the exception (consider using a logging framework)
+                Console.WriteLine(ex);  // Replace with your logging mechanism
+                return StatusCode(500, new { message = "A database error occurred. Please try again later." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Log the exception
+                Console.WriteLine(ex);  // Replace with your logging mechanism
+                return StatusCode(500, new { message = "An internal server error occurred. Please try again later." });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception message and stack trace for debugging purposes
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+
+                // Return a standardized error response
+                return StatusCode(500, new { message = "An unexpected error occurred. Please try again later.", error = ex.Message });
+            }
         }
+
 
         /// <summary>
         /// Adds a new company with its associated address data.
@@ -78,6 +106,11 @@ namespace MedisatERP.Controllers
         [HttpPost]
         public async Task<IActionResult> Post(string values)
         {
+            // Add a error check messsage to ensure that client Gender exists in the enum.
+            // So do phone number country code for contacts
+            // So do a country
+            // When you accomplish the task, leverage the knowledge with user accounts and also include Gender here you use select box
+
             try
             {
                 // Deserialize the incoming request values 
@@ -89,7 +122,8 @@ namespace MedisatERP.Controllers
                 // Create a new Company Clients Instance and populate it with the provided data
                 var model = new CompanyClient();
                 var companyClientsData = valuesDict.Where(kv => kv.Key != "Address")
-                    .ToDictionary(kv => kv.Key, kv => kv.Value);
+                                                   .ToDictionary(kv => kv.Key, kv => kv.Value);
+
                 PopulateModel(model, companyClientsData); // Populate the company clients model.
 
                 // Initialize Address if not provided
@@ -115,12 +149,35 @@ namespace MedisatERP.Controllers
                 // Return the status ok (200) of the newly created company client
                 return Ok();
             }
+            catch (JsonSerializationException ex)
+            {
+                // Log the exception
+                Console.WriteLine($"JSON serialization error: {ex.Message}");
+                return BadRequest(new { message = "Invalid input format. Please check your data and try again." });
+            }
+            catch (SqlException ex)
+            {
+                // Log the exception (consider using a logging framework)
+                Console.WriteLine(ex);  // Replace with your logging mechanism
+                return StatusCode(500, new { message = "A database error occurred. Please try again later." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Log the exception
+                Console.WriteLine(ex);  // Replace with your logging mechanism
+                return StatusCode(500, new { message = "An internal server error occurred. Please try again later." });
+            }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+                // Log the exception message and stack trace for debugging purposes
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
 
+                // Return a standardized error response
+                return StatusCode(500, new { message = "An unexpected error occurred. Please try again later.", error = ex.Message });
+            }
         }
+
 
         /// <summary>
         /// Updates an existing company and its address data.
@@ -139,7 +196,12 @@ namespace MedisatERP.Controllers
                     .FirstOrDefaultAsync(item => item.ClientId == key);
 
                 if (model == null)
-                    return StatusCode(404, "Company not found");
+                {
+                    Console.WriteLine($"Company client not found with key: {key}");
+                    return StatusCode(404, "Company client not found");
+                }
+
+                Console.WriteLine($"Company client found with key: {key}, proceeding with updates.");
 
                 // Deserialize the incoming updated values
                 var valuesDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(values);
@@ -164,24 +226,78 @@ namespace MedisatERP.Controllers
 
                 // Extract company clients data and update the company clients fields
                 var companyClientsData = valuesDict.Where(kv => kv.Key != "Address")
-                    .ToDictionary(kv => kv.Key, kv => kv.Value);
+                                                   .ToDictionary(kv => kv.Key, kv => kv.Value);
                 PopulateModel(model, companyClientsData);
 
                 // Validate the updated model before saving
                 if (!TryValidateModel(model))
+                {
+                    Console.WriteLine("Model validation failed.");
                     return BadRequest(GetFullErrorMessage(ModelState));
+                }
 
-                // Save the changes to the database
-                await _context.SaveChangesAsync();
+                Console.WriteLine("Model validated successfully.");
 
-                return Ok(); // Return a success response
+                try
+                {
+                    // Save the changes to the database
+                    await _context.SaveChangesAsync();
+                    Console.WriteLine("Company client updated successfully in the database.");
+                    return Ok();
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    // Handle the concurrency exception
+                    Console.WriteLine("Concurrency exception occurred while updating company client.");
+                    var entry = ex.Entries.Single();
+                    var databaseValues = entry.GetDatabaseValues();
+                    if (databaseValues == null)
+                    {
+                        Console.WriteLine("The record you attempted to edit was deleted by another user.");
+                        return NotFound(new { success = false, message = "The record you attempted to edit was deleted by another user." });
+                    }
+                    else
+                    {
+                        var dbValues = (CompanyClient)databaseValues.ToObject();
+                        Console.WriteLine("The record you attempted to edit was modified by another user.");
+                        Console.WriteLine($"Current values: ClientName: {dbValues.ClientName}, Address: {dbValues.Address.Street}, City: {dbValues.Address.City}, State: {dbValues.Address.State}, PostalCode: {dbValues.Address.PostalCode}, Country: {dbValues.Address.Country}");
+
+                        // Optionally, reload the entity with current database values
+                        await entry.ReloadAsync();
+                        return Conflict(new { success = false, message = "The record you attempted to edit was modified by another user.", currentValues = dbValues });
+                    }
+                }
+            }
+            catch (JsonSerializationException ex)
+            {
+                // Log the exception
+                Console.WriteLine($"JSON serialization error: {ex.Message}");
+                return BadRequest(new { message = "Invalid input format. Please check your data and try again." });
+            }
+            catch (SqlException ex)
+            {
+                // Log the exception (consider using a logging framework)
+                Console.WriteLine(ex);  // Replace with your logging mechanism
+                return StatusCode(500, new { message = "A database error occurred. Please try again later." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Log the exception
+                Console.WriteLine(ex);  // Replace with your logging mechanism
+                return StatusCode(500, new { message = "An internal server error occurred. Please try again later." });
             }
             catch (Exception ex)
             {
-                // Return an internal server error if an exception occurs
-                return StatusCode(500, $"Internal Server error: {ex.Message}");
+                // Log the exception message and stack trace for debugging purposes
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+
+                // Return a standardized error response
+                return StatusCode(500, new { message = "An unexpected error occurred. Please try again later.", error = ex.Message });
             }
         }
+
+
 
         /// <summary>
         /// Deletes a company clients and its associated address data by its unique identifier.
@@ -193,55 +309,107 @@ namespace MedisatERP.Controllers
         {
             try
             {
+                // Log the entry point with the key being used for deletion
+                Console.WriteLine($"Delete request received for CompanyClient with ID: {key}");
+
                 // Retrieve the company client to delete
                 var model = await _context.CompanyClients
                     .Include(c => c.Address) // Ensure Address data is eagerly loaded
                     .FirstOrDefaultAsync(item => item.ClientId == key);
 
+                // Check if the model is null
                 if (model == null)
                 {
+                    // Log that the model was not found
+                    Console.WriteLine($"No CompanyClient found with ID: {key}");
                     // Return not found if the company client does not exist
                     return NotFound($"Company client with ID {key} not found.");
                 }
 
+                // Log the model that was found for deletion
+                Console.WriteLine($"Found CompanyClient with ID: {key}. Address exists: {model.Address != null}");
+
                 // Remove the associated address, if it exists
                 if (model.Address != null)
                 {
+                    // Log the removal of the address
+                    Console.WriteLine($"Removing associated Address with ID: {model.Address.AddressId}");
                     _context.ClientAddresses.Remove(model.Address);
                 }
 
-                // Remove the company client record itself
+                // Log the removal of the company client itself
+                Console.WriteLine($"Removing CompanyClient with ID: {key}");
                 _context.CompanyClients.Remove(model);
 
                 // Save the changes to the database
                 await _context.SaveChangesAsync();
 
+                // Log successful deletion
+                Console.WriteLine($"Successfully deleted CompanyClient with ID: {key}");
+
                 return NoContent(); // Return No Content status after successful deletion
+            }
+            catch (SqlException ex)
+            {
+                // Log the exception (consider using a logging framework)
+                Console.WriteLine(ex);  // Replace with your logging mechanism
+                return StatusCode(500, new { message = "A database error occurred. Please try again later." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Log the exception
+                Console.WriteLine(ex);  // Replace with your logging mechanism
+                return StatusCode(500, new { message = "An internal server error occurred. Please try again later." });
             }
             catch (Exception ex)
             {
-                // Return an internal server error if an exception occurs
-                return StatusCode(500, $"An internal server error occurred: {ex.Message}");
-            }
-            //var model = await _context.CompanyClients.FirstOrDefaultAsync(item => item.ClientId == key);
+                // Log the exception message and stack trace for debugging purposes
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
 
-            //_context.CompanyClients.Remove(model);
-            //await _context.SaveChangesAsync();
+                // Return a standardized error response
+                return StatusCode(500, new { message = "An unexpected error occurred. Please try again later.", error = ex.Message });
+            }
         }
 
 
         [HttpGet]
         public async Task<IActionResult> CompaniesLookup(DataSourceLoadOptions loadOptions)
         {
-            var lookup = from i in _context.Companies
-                         orderby i.CompanyName
-                         select new
-                         {
-                             Value = i.CompanyId,
-                             Text = i.CompanyName
-                         };
-            return Json(await DataSourceLoader.LoadAsync(lookup, loadOptions));
+            try
+            {
+                var lookup = from i in _context.Companies
+                             orderby i.CompanyName
+                             select new
+                             {
+                                 Value = i.CompanyId,
+                                 Text = i.CompanyName
+                             };
+                return Json(await DataSourceLoader.LoadAsync(lookup, loadOptions));
+            }
+            catch (SqlException ex)
+            {
+                // Log the exception (consider using a logging framework)
+                Console.WriteLine(ex);  // Replace with your logging mechanism
+                return StatusCode(500, new { message = "A database error occurred. Please try again later." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Log the exception
+                Console.WriteLine(ex);  // Replace with your logging mechanism
+                return StatusCode(500, new { message = "An internal server error occurred. Please try again later." });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception message and stack trace for debugging purposes
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+
+                // Return a standardized error response
+                return StatusCode(500, new { message = "An unexpected error occurred. Please try again later.", error = ex.Message });
+            }
         }
+
 
         /// <summary>
         /// Populates the  model with the given values.

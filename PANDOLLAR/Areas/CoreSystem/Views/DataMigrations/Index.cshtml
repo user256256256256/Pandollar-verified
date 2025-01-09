@@ -1,5 +1,6 @@
 ﻿@using DevExtreme.AspNet.Mvc
 @using PANDOLLAR.Areas.CoreSystem.Models
+@model AspNetUser
 
 @{
     Layout = "_Layout";
@@ -12,7 +13,7 @@
 </div>
 
 <!-- Section Search for the Company-->
-<div class="row">
+<div class="row mb-3">
     <div class="form-group col-md-4">
         <label class="my-3">Company Name:</label>
         @(Html.DevExtreme().SelectBox()
@@ -35,16 +36,22 @@
 </div>
 
 <!-- DevExtreme DataGrid for System Migrations -->
-<div id="migrationGrid">
+<div class="card p-3" id="migrationGrid">
     @(
         Html.DevExtreme().DataGrid<DataMigration>()
         .ShowBorders(true)
         .ID("gv_migrationList")
         .DataSource(d => d.Mvc().Controller("DataMigrationsAPI").LoadAction("Get").Key("MigrationId")
+        .InsertAction("Post")
+        .UpdateAction("Put")
+        .DeleteAction("Delete")
         .LoadParams(new { CompanyId = new JS("getCompanyId") }))
         .ShowColumnLines(false)
         .ShowRowLines(true)
         .RowAlternationEnabled(true)
+        .FilterRow(f => f.Visible(false))
+        .HeaderFilter(f => f.Visible(true))
+        .RemoteOperations(true)
         .ColumnHidingEnabled(true)
         .ColumnAutoWidth(true)
         .Selection(s => s.Mode(SelectionMode.Multiple))
@@ -103,6 +110,14 @@
             });
 
         })
+        .Paging(p => p.PageSize(10))
+        .Summary(s => s
+        .TotalItems(totalItems =>
+        {
+            totalItems.AddFor(m => m.Company.CompanyName).SummaryType(SummaryType.Count);
+        })
+        )
+
         )
 </div>
 

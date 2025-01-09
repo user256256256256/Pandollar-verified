@@ -1,0 +1,117 @@
+﻿@using DevExtreme.AspNet.Mvc
+@using PANDOLLAR.Areas.CoreSystem.Models
+@model AspNetUser
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Subscriptions";
+}
+
+<div class="section my-3">
+    <h2 class="section-title">SUBSCRIPTION MANAGEMENT CENTER</h2>
+    <p class="section-lead">This page is just an example for you to create your own page.</p>
+</div>
+
+<!-- Section Search for the Company-->
+<div class="row mb-3">
+    <div class="form-group col-md-4">
+        <label class="my-3">Plan Name:</label>
+        @(Html.DevExtreme().SelectBox()
+            .DataSource(d => d.Mvc().Controller("SubscriptionPlansAPI").LoadAction("Get").Key("Id"))
+            .DisplayExpr("PlanName")
+            .ValueExpr("Id")
+            .SearchEnabled(true)
+            .ShowClearButton(true)
+            .Placeholder("Select Plan")
+            .Width("100%")
+            .ID("txt_subscription_plan")
+            .OnValueChanged(@<text>
+            function(e){
+            // Refresh the grid when the plan is changed
+            const grid = $('#subscriptionsGrid').dxDataGrid('instance');
+            grid.refresh();  // Triggers a reload with the updated parameters
+            }
+        </text>)
+            )
+    </div>
+</div>
+
+<!-- DevExtreme DataGrid for Subscriptions -->
+<div class="card p-3" id="subscriptionsGrid">
+    @(
+        Html.DevExtreme().DataGrid<Subscription>()
+        .ShowBorders(true)
+        .ID("subscriptionsGrid")
+        .DataSource(d => d.Mvc().Controller("SubscriptionsAPI").LoadAction("Get").Key("Id")
+        .DeleteAction("Delete")
+        .LoadParams(new {SubscriptionPlanId = new JS("getSubscriptionPlanId") }))
+        .ShowColumnLines(false)
+        .ShowRowLines(true)
+        .RowAlternationEnabled(true)
+        .FilterRow(f => f.Visible(false))
+        .HeaderFilter(f => f.Visible(true))
+        .RemoteOperations(true)
+        .ColumnHidingEnabled(true)
+        .ColumnAutoWidth(true)
+        .Selection(s => s.Mode(SelectionMode.Multiple))
+        .SearchPanel(s => s.Visible(true).Width(250).Placeholder("Search..."))
+        .FocusedRowEnabled(true)
+        .Paging(p => p.PageSize(10))
+        .RemoteOperations(true)
+        .Summary(s => s.TotalItems(totalItems => { totalItems.AddFor(m => m.Id).SummaryType(SummaryType.Count); }))
+        .Editing(e => e
+        .AllowAdding(false) // Disable adding new subscriptions
+        .AllowUpdating(false) // Allow editing existing subscriptions
+        .AllowDeleting(true) // Allow deleting subscriptions
+        .UseIcons(true) // Use icons for actions
+        .Mode(GridEditMode.Popup)
+        .Popup(p => p
+        .Title("Manage Subscription")
+        .Height(450)
+        .ShowTitle(true)
+        .Position(pos => pos.My(HorizontalAlignment.Center, VerticalAlignment.Center).At(HorizontalAlignment.Center, VerticalAlignment.Center).Of(new JS("window"))))
+        )
+        .Sorting(s => s.Mode(GridSortingMode.Multiple))
+        .Columns(columns =>
+        {
+            columns.AddFor(m => m.Company.CompanyName).Caption("Company Name").AllowEditing(false);
+            columns.AddFor(m => m.StartDate).Caption("Start Date").Format("MM/dd/yyyy").AllowEditing(false);
+            columns.AddFor(m => m.EndDate).Caption("End Date").Format("MM/dd/yyyy").AllowEditing(false);
+            columns.AddFor(m => m.IsActive).Caption("Is Active").DataType(GridColumnDataType.Boolean).AllowEditing(false);
+            columns.AddFor(m => m.PaymentStatus).Caption("Payment Status").AllowEditing(false);
+            columns.AddFor(m => m.SubscriptionPlan.PlanName.PlanName).Caption("Plan Name").AllowEditing(false);
+            columns.AddFor(m => m.SubscriptionPlan.PlanName.Price).Caption("Plan price ($)").DataType(GridColumnDataType.Number).AllowEditing(false);
+            columns.AddFor(m => m.SubscriptionPlan.Duration).Caption("Plan Duration (Months)").AllowEditing(false); 
+            columns.AddFor(m => m.SubscriptionPlan.Description).Caption("Plan Description").AllowEditing(false);
+            columns.AddFor(m => m.SubscriptionPlan.BillingCycle.CycleName).Caption("Billing Cycle").AllowEditing(false); 
+
+            // Manage Button Column (for Edit/Delete)
+            columns.Add()
+            .Type(GridCommandColumnType.Buttons)
+            .Width(80)
+            .Caption("Manage")
+            .Name("ManageButton")
+            .Buttons(b =>
+            {
+                b.Add().Name(GridColumnButtonName.Edit).Hint("Edit");
+                b.Add().Name(GridColumnButtonName.Delete).Hint("Delete");
+            });
+        })
+        .Paging(p => p.PageSize(10))
+        .Summary(s => s
+        .TotalItems(totalItems =>
+        {
+            totalItems.AddFor(m => m.Company.CompanyName).SummaryType(SummaryType.Count);
+        })
+        )
+
+        )
+</div>
+
+<script>
+    // Define the getPlanId function to retrieve the selected Plan ID
+    function getSubscriptionPlanId() {
+        var planId = $("#txt_subscription_plan").dxSelectBox('option', 'value');
+        return planId;
+    }
+</script>

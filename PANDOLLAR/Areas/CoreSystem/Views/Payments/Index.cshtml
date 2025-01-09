@@ -1,0 +1,95 @@
+﻿@using DevExtreme.AspNet.Mvc
+@using PANDOLLAR.Areas.CoreSystem.Models
+@model AspNetUser
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Payments";
+}
+
+<div class="section my-3">
+    <h2 class="section-title">PAYMENTS MANAGEMENT CENTER</h2>
+    <p class="section-lead">This page is just an example for you to create your own page.</p>
+</div>
+
+<!-- DevExtreme DataGrid for Feedbacks -->
+<div class="card p-3" id="paymentsGrid">
+    @(
+        Html.DevExtreme().DataGrid<Payment>()
+        .ShowBorders(true)
+        .ID("payments_list")
+        .DataSource(d => d.Mvc().Controller("PaymentsAPI").LoadAction("Get").Key("Id")
+        .DeleteAction("Delete"))
+        .ShowColumnLines(false)
+        .ShowRowLines(true)
+        .RowAlternationEnabled(true)
+        .FilterRow(f => f.Visible(false))
+        .HeaderFilter(f => f.Visible(true))
+        .RemoteOperations(true)
+        .ColumnHidingEnabled(true)
+        .ColumnAutoWidth(true)
+        .Selection(s => s.Mode(SelectionMode.Multiple))
+        .SearchPanel(s => s.Visible(true).Width(250).Placeholder("Search..."))
+        .FocusedRowEnabled(true)
+        .Paging(p => p.PageSize(10))
+        .RemoteOperations(true)
+        .Summary(s => s.TotalItems(totalItems => { totalItems.AddFor(m => m.Id).SummaryType(SummaryType.Count); }))
+        .Editing(e => e
+        .AllowAdding(false)  // Disable adding new feedback
+        .AllowUpdating(false)  // Allow editing feedback
+        .AllowDeleting(true)  // Allow deleting feedback
+        .UseIcons(true) // Use Icons
+        .Mode(GridEditMode.Popup)
+        .Popup(p => p
+        .Title("Customer Payments")
+        .Height(450)
+        .ShowTitle(true)
+        .Position(pos => pos
+        .My(HorizontalAlignment.Center, VerticalAlignment.Center)
+        .At(HorizontalAlignment.Center, VerticalAlignment.Center)
+        .Of(new JS("window"))
+        )
+        )
+        )
+        .Sorting(s => s
+        .Mode(GridSortingMode.Multiple)  // Allows sorting by multiple columns
+        )
+        .Columns(columns =>
+        {
+            columns.AddFor(m => m.Subscription.Company.CompanyName).Caption("Company Name").AllowEditing(false);
+            columns.AddFor(m => m.PaymentDate).Caption("Payment Date").AllowEditing(false); 
+            columns.AddFor(m => m.PaymentMethod.Method).Caption("Payment Method").AllowEditing(false); 
+            columns.AddFor(m => m.PaymentStatus.Status).Caption("Transaction Status").AllowEditing(false);
+            columns.AddFor(m => m.Subscription.SubscriptionPlan.PlanName.PlanName).Caption("Plan Name").AllowEditing(false); ;
+            columns.AddFor(m => m.Subscription.SubscriptionPlan.PlanName.Price).Caption("Plan Price($)").AllowEditing(false);
+            columns.AddFor(m => m.TransactionId).Caption("Transaction ID").AllowEditing(false);
+            columns.AddFor(m => m.Subscription.SubscriptionPlan.Description).Caption("Plan Description").AllowEditing(false);
+            columns.AddFor(m => m.Subscription.SubscriptionPlan.Duration).Caption("Plan Duration (Months)").AllowEditing(false);
+            columns.AddFor(m => m.Subscription.Company.CompanyEmail).Caption("Company Email").AllowEditing(false);
+            columns.AddFor(m => m.Subscription.Company.CompanyPhone).Caption("Company Phone").AllowEditing(false);
+            
+
+
+            // Manage Button Column (for Edit/Delete)
+            columns.Add()
+            .Type(GridCommandColumnType.Buttons)
+            .Width(80)
+            .Caption("Manage")
+            .Name("ManageButton")
+            .Buttons(b =>
+            {
+                b.Add().Name(GridColumnButtonName.Edit).Hint("Edit");
+                b.Add().Name(GridColumnButtonName.Delete).Hint("Delete");
+            });
+
+        })
+        .Paging(p => p.PageSize(10))
+        .Summary(s => s
+        .TotalItems(totalItems =>
+        {
+            totalItems.AddFor(m => m.Subscription.Company.CompanyName).SummaryType(SummaryType.Count);
+        })
+        )
+
+        )
+</div>

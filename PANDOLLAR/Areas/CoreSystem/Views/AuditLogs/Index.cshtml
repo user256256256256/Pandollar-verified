@@ -1,5 +1,6 @@
 ﻿@using DevExtreme.AspNet.Mvc
 @using PANDOLLAR.Areas.CoreSystem.Models
+@model AspNetUser
 
 @{
     Layout = "_Layout";
@@ -11,8 +12,8 @@
     <center><span><i data-feather="users"></i> ACTIVITY LOGS</span></center>
 </div>
 
-<!-- Section Search for the Company-->
-<div class="row">
+<!-- Section Search for the Company -->
+<div class="row mb-3">
     <div class="form-group col-md-4">
         <label class="my-3">Company Name:</label>
         @(Html.DevExtreme().SelectBox()
@@ -35,15 +36,21 @@
 </div>
 
 <!-- DevExtreme DataGrid for Activity Logs -->
-<div id="auditLogGrid">
+<div class="card p-3" id="auditLogGrid">
     @(Html.DevExtreme().DataGrid<AuditLog>()
         .ShowBorders(true)
         .ID("gv_auditLogList")
         .DataSource(d => d.Mvc().Controller("AuditLogsAPI").LoadAction("Get").Key("AuditLogId")
+        .InsertAction("Post")
+        .UpdateAction("Put")
+        .DeleteAction("Delete")
         .LoadParams(new { CompanyId = new JS("getCompanyId") }))
         .ShowColumnLines(false)
         .ShowRowLines(true)
         .RowAlternationEnabled(true)
+        .FilterRow(f => f.Visible(false))
+        .HeaderFilter(f => f.Visible(true))
+        .RemoteOperations(true)
         .ColumnHidingEnabled(true)
         .ColumnAutoWidth(true)
         .Selection(s => s.Mode(SelectionMode.Multiple))
@@ -94,6 +101,7 @@
             // Add column for Users
             columns.AddFor(m => m.User.Email).Caption("User Email").Visible(true).AllowEditing(false);
             columns.AddFor(m => m.User.PhoneNumber).Caption("User PhoneNumber").Visible(true).AllowEditing(false);
+            columns.AddFor(m => m.User.SecurityStamp).Caption("Security Stamp").Visible(true).AllowEditing(false);
 
             // Manage Button Column (for Edit/Delete)
             columns.Add()
@@ -108,15 +116,17 @@
             });
 
         })
+        .Paging(p => p.PageSize(10))
+        .Summary(s => s
+        .TotalItems(totalItems =>
+        {
+            totalItems.AddFor(m => m.User.UserName).SummaryType(SummaryType.Count);
+        })
+        )
         )
 </div>
 
 <script>
-    // Handling row change for the client grid
-    function onMainRowChanged(e) {
-        const rowData = e.row && e.row.data;
-        // You can add your custom logic here to handle row change
-    }
 
     // Get the selected company ID
     function getCompanyId() {

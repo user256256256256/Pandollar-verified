@@ -1,0 +1,103 @@
+﻿@{
+    ViewData["Title"] = "Forgot Password";
+}
+
+<div class="container-fluid position-relative d-flex p-0 h-100 authentication-bg justify-content-center align-items-center">
+
+    <div class="col-sm-10 col-md-4 col-lg-3 mx-auto">
+        
+
+        <div class="d-flex flex-column justify-content-center">
+
+            <!-- Custom template --See ~wwwroot/js/medista.custom-elements.js WelcomeLogo -->
+            <welcome-logo></welcome-logo>
+
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <div class="m-sm-3">
+                        <div class="form-group mb-2">
+                            <label class="mb-1" for="otp_email">Enter Email:</label>
+                            @(Html.DevExtreme().TextBox().ID("user_email")
+                                .Value("")
+                                .Placeholder("Enter email.")
+                                .Width("100%")
+                                )
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            @(Html.DevExtreme().Button()
+                                .Text("Request Token")
+                                .Type(ButtonType.Default)
+                                .Icon("arrowright")
+                                .StylingMode(ButtonStylingMode.Outlined)
+                                .Width("100%")
+                                .Height(40)
+                                .OnClick("requestToken")
+                                .ID("requestTokenButton")
+                                )
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Custom template --See ~wwwroot/js/medista.custom-elements.js WelcomeFooter -->
+            <welcome-footer></welcome-footer>
+        </div>
+    </div>
+    
+</div>
+
+<script>
+    function requestToken() {
+        // Retrieve the email entered by the user
+        var email = $("#user_email").dxTextBox('option', 'value');
+
+        // Check if email is entered
+        if (email) {
+            // Define the API endpoint for the forgot password functionality
+            const url = '/api/ForgotPasswordAPI/SendRecoveryToken';
+
+            // Prepare the data to be sent in the GET request
+            const data = { email: email };
+
+            // Show loading indicator
+            Notiflix.Loading.Dots('Sending recovery token...');
+
+            // Send the GET request with email as query parameter
+            $.getJSON(url, data)
+                .done(function (json) {
+                    // Remove loading indicator
+                    Notiflix.Loading.Remove(500);
+
+                    // Check if the response indicates success
+                    if (json.success) {
+                        // Notify user that the recovery token has been sent
+                        Notiflix.Report.Success("Success", "A recovery token has been sent to your email.", "OK");
+                    } else {
+                        // Show error message if request fails
+                        Notiflix.Report.Failure("Failure", json.mresponse, "OK");
+                    }
+                })
+                .fail(function (jqxhr, textStatus, error) {
+                    // Remove loading indicator on failure
+                    Notiflix.Loading.Remove(500);
+
+                    // Handle any errors from the request
+                    var err = textStatus + ", " + error;
+                    Notiflix.Report.Failure("Failure", "Request failed: " + err, "OK");
+                });
+        } else {
+            // If no email is entered, show an error message
+            Notiflix.Report.Failure("Error", "Please enter your email address.", "OK");
+        }
+    }
+
+    // Add an event listener for the Enter key to trigger the login button click
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Prevent the default form submission behavior
+            document.getElementById('requestTokenButton').click(); // Trigger the login button click
+        }
+    });
+</script>

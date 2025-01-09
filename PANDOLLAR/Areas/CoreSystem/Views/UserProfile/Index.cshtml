@@ -1,0 +1,343 @@
+﻿@using DevExtreme.AspNet.Mvc
+@using PANDOLLAR.Areas.CoreSystem.Models
+@model AspNetUser
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "UserProfile";
+    var userId = Model.Id;
+}
+
+<!-- Custom Button -->
+<div class="mb-4 d-flex align-items-center gap-2 " id="change-profile-img">
+    <!-- User Image -->
+    <!-- Handel the sized parent appropriately while fixing errors -->
+    <img src="@(string.IsNullOrEmpty(Model.ProfileImagePath) ? Url.Content("~/img/userProfileImages/avatar.jpg") : Url.Content("~/img/userProfileImages/" + Model.ProfileImagePath))" class=" rounded-circle user-profile-img" alt="User Image" />
+
+    <!-- Hidden File Uploader -->
+    <div class="file-uploader">
+        @(Html.DevExtreme().FileUploader()
+            .ID("uploadProfileImg")
+            .Name("Profile Picture")
+            .SelectButtonText("Change profile picture")
+            .LabelText("")
+            .Accept("image/*")
+            .UploadMode(FileUploadMode.UseButtons)
+            .AllowCanceling(true)
+            .UploadButtonText("Upload image")
+            .AllowedFileExtensions(new[] { ".jpg", ".jpeg", ".png" })
+            .InputAttr("aria-label", "Select image")
+            .OnUploaded("onUploadProfileImg"))
+    </div>
+
+</div>
+
+<div class="section my-3">
+    <h2 class="section-title">PROFILE INFORMATION</h2>
+    <p class="section-lead">This page is just an example for you to create your own page.</p>
+</div>
+
+<div class="section">
+    <div class="container">
+        <div class="row">
+            <!-- User Name -->
+            <div class="col-md-6 mb-3">
+                <label>User Name:</label>
+                @(Html.DevExtreme().TextBox()
+                    .ID("txt_user_name")
+                    .Value(Model.UserName)
+                    .Width("100%")
+                    .ReadOnly(true) 
+                    )
+            </div>
+
+            <!-- Email -->
+            <div class="col-md-6 mb-3">
+                <label>Email:</label>
+                @(Html.DevExtreme().TextBox()
+                    .ID("txt_email")
+                    .Value(Model.Email)
+                    .Width("100%")
+                    .ReadOnly(true)
+                    )
+            </div>
+
+            <!-- Phone Number -->
+            <div class="col-md-6 mb-3">
+                <label>Phone Number:</label>
+                @(Html.DevExtreme().TextBox()
+                    .ID("txt_phone")
+                    .Value(Model.PhoneNumber)
+                    .Width("100%")
+                    .ReadOnly(true)
+                    )
+            </div>
+
+            <!-- Password -->
+            <div class="col-md-6 mb-3">
+                <label>Password:</label>
+                @(Html.DevExtreme().TextBox()
+                    .ID("txt_password")
+                    .Mode(TextBoxMode.Password)
+                    .Placeholder("************")
+                    .Value("")
+                    .Width("100%")
+                    .ReadOnly(true)
+                    )
+            </div>
+
+            <!-- Roles -->
+            <div class="col-md-6 mb-3">
+                <label>Roles:</label>
+                @(Html.DevExtreme().TextBox()
+                    .ID("txt_main_role")
+                    .Value(ViewData["Roles"]?.ToString())
+                    .Width("100%")
+                    .ReadOnly(true)
+                    )
+            </div>
+
+            <!-- Bio Data -->
+            <div class="col-md-12 mb-3">
+                <label>Bio Data:</label>
+                @(Html.DevExtreme().TextArea()
+                    .ID("txt_bio_data")
+                    .Value(Model.BioData)
+                    .Height(100)
+                    .Width("100%")
+                    .ReadOnly(true)
+                    )
+            </div>
+        </div>
+
+        <!-- Edit and Save Buttons -->
+        <div>
+            <!-- Edit button (text will change to "Cancel" when clicked) -->
+            <button id="btn_edit" class="btn btn-primary d-inline-block" onclick="editCancelButtonClicked()">Edit</button>
+
+            <!-- Save button is initially hidden using Bootstrap's d-none class -->
+            <button id="btn_save" class="btn btn-success d-none" onclick="saveButtonClicked()">Save</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Track the original values of the fields
+    let originalValues = {};
+
+    // When the Edit/Cancel button is clicked
+    function editCancelButtonClicked() {
+        if ($("#btn_edit").text() === "Edit") {
+            // Switch to Edit mode
+            // Store the original values of the fields before editing
+            originalValues.userName = $("#txt_user_name").dxTextBox("option", "value");
+            originalValues.email = $("#txt_email").dxTextBox("option", "value");
+            originalValues.phoneNumber = $("#txt_phone").dxTextBox("option", "value");
+            originalValues.password = $("#txt_password").dxTextBox("option", "value");
+            originalValues.bioData = $("#txt_bio_data").dxTextArea("option", "value");
+
+            // Enable the fields for editing
+            $("#txt_user_name").dxTextBox("option", "readOnly", false);
+            $("#txt_email").dxTextBox("option", "readOnly", false);
+            $("#txt_phone").dxTextBox("option", "readOnly", false);
+            $("#txt_password").dxTextBox("option", "readOnly", false);
+            $("#txt_bio_data").dxTextArea("option", "readOnly", false);
+
+            // Show the Save button, hide the Edit button
+            $("#btn_save").removeClass("d-none").addClass("d-inline-block");
+
+            // Change Edit button text to Cancel and add danger color (Bootstrap)
+            $("#btn_edit").text("Cancel").removeClass("btn-primary").addClass("btn-danger");
+        } else {
+            // Switch back to Cancel mode, revert changes
+            cancelButtonClicked();
+        }
+    }
+
+    function saveButtonClicked() {
+        // Create an object to store the updated data
+        var updatedUserData = {};
+
+        // Check for changes and add only modified fields to the updatedUserData object
+        let currentUserName = $("#txt_user_name").dxTextBox("option", "value");
+        if (currentUserName !== originalValues.userName) {
+            updatedUserData.UserName = currentUserName;
+            updatedUserData.NormalizedUserName = currentUserName.toUpperCase();
+        }
+
+        let currentEmail = $("#txt_email").dxTextBox("option", "value");
+        if (currentEmail !== originalValues.email) {
+            updatedUserData.Email = currentEmail;
+            updatedUserData.NormalizedEmail = currentEmail.toUpperCase();
+        }
+
+        let currentPhone = $("#txt_phone").dxTextBox("option", "value");
+        if (currentPhone !== originalValues.phoneNumber) {
+            updatedUserData.PhoneNumber = currentPhone;
+        }
+
+        let currentPassword = $("#txt_password").dxTextBox("option", "value");
+        if (currentPassword !== originalValues.password) {
+            updatedUserData.Password = currentPassword;
+        }
+
+        let currentBioData = $("#txt_bio_data").dxTextArea("option", "value");
+        if (currentBioData !== originalValues.bioData) {
+            updatedUserData.BioData = currentBioData;
+        }
+
+        // If no fields have been modified, notify the user and exit
+        if (Object.keys(updatedUserData).length === 0) {
+            Notiflix.Report.Info('No Changes', 'No fields have been changed.', 'OK');
+            return;
+        }
+
+        // The userId should be set correctly here
+        var userId = '@Model.Id';  // Assuming @Model.Id contains the correct user ID
+
+        // Convert the updatedUserData object to a JSON string
+        var jsonString = JSON.stringify(updatedUserData);
+
+        // Show loading indicator with Notiflix
+        Notiflix.Loading.Dots('Saving your profile...');
+
+        // Make the AJAX request to save the user data (only sending changed fields)
+        $.ajax({
+            url: `/api/AspNetUsersAPI/Put?key=${encodeURIComponent(userId)}&values=${encodeURIComponent(jsonString)}`,
+            method: 'PUT',
+            contentType: 'application/json',
+            success: function (json) {
+                // Remove the loading indicator
+                Notiflix.Loading.Remove(500);
+
+                // Handle the success response
+                if (json.success) {
+                    // Show success message with a callback when the user clicks 'OK'
+                    Notiflix.Report.Success(
+                        'Profile Updated', json.message ,'OK',
+                        function () {
+                            // Reload the page only after the user clicks 'OK'
+                            window.location.reload();
+                        }
+                    );
+                } else {
+                    // Report failure if it was unsuccessful
+                    Notiflix.Report.Failure('Profile Update Failed', json.message , 'OK');
+                }
+            },
+            error: function (jqxhr, textStatus, error) {
+                // Remove the loading indicator on failure
+                Notiflix.Loading.Remove(500);
+
+                // Handle the error case
+                var errorMessage = 'Failed to update profile: ' + error; // Default message if responseJSON is unavailable
+
+                if (jqxhr.responseJSON && jqxhr.responseJSON.message) {
+                    errorMessage = jqxhr.responseJSON.message; // Use the message from the backend if available
+                } else if (jqxhr.responseJSON && jqxhr.responseJSON.error) {
+                    errorMessage = jqxhr.responseJSON.error; // Alternatively, check for error field
+                } else if (jqxhr.responseJSON && jqxhr.responseJSON.errors) {
+                    errorMessage = jqxhr.responseJSON.errors.map(function (err) { return err.description; }).join(', '); // Concatenate all error descriptions
+                }
+
+                // Show error message using Notiflix
+                Notiflix.Report.Failure('Profile Update Failed', errorMessage, 'OK');
+            }
+        });
+
+
+    }
+
+    // Cancel the edit (revert changes to original values)
+    function cancelButtonClicked() {
+        // Revert the fields to their original values
+        $("#txt_user_name").dxTextBox("option", "value", originalValues.userName);
+        $("#txt_email").dxTextBox("option", "value", originalValues.email);
+        $("#txt_phone").dxTextBox("option", "value", originalValues.phoneNumber);
+        $("#txt_password").dxTextBox("option", "value", originalValues.password);
+        $("#txt_bio_data").dxTextArea("option", "value", originalValues.bioData);
+
+        // Switch the fields back to read-only mode
+        switchToReadOnly();
+    }
+
+    // Helper function to switch fields back to read-only mode
+    function switchToReadOnly() {
+        $("#txt_user_name").dxTextBox("option", "readOnly", true);
+        $("#txt_email").dxTextBox("option", "readOnly", true);
+        $("#txt_phone").dxTextBox("option", "readOnly", true);
+        $("#txt_password").dxTextBox("option", "readOnly", true);
+        $("#txt_bio_data").dxTextArea("option", "readOnly", true);
+
+        // Restore the Edit button with its original text, hide Save button
+        $("#btn_edit").removeClass("d-none").addClass("d-inline-block").text("Edit").removeClass("btn-danger").addClass("btn-primary");
+        $("#btn_save").addClass("d-none").removeClass("d-inline-block");
+    }
+
+    function onUploadProfileImg(e) {
+        var file = e.file;  // The uploaded file
+        console.log("File selected:", file);
+
+        var userId = "@userId";
+
+        var formData = new FormData();
+        formData.append('profilePicture', file);  // Add the file to FormData
+
+        // Show loading indicator before the request starts
+        Notiflix.Loading.Dots("Uploading your profile picture...");
+
+        // Make the PUT request to upload the file with userId in the URL
+      $.ajax({
+        url: `/api/AspNetUsersAPI/UploadProfilePicture?userId=${encodeURIComponent(userId)}`,  // Add userId as query parameter
+        type: 'PUT',
+        data: formData,
+        contentType: false,  // Important to not set contentType when sending FormData
+        processData: false,  // Prevent jQuery from processing the data
+        })
+        .done(function (json) {
+            // Remove loading indicator on success
+            Notiflix.Loading.Remove(500);
+
+            // Check if the upload was successful
+            if (json.success) {
+                // Show success message with Notiflix
+                Notiflix.Report.Success(
+                    "Upload Success",
+                    json.message ,
+                    "OK",
+                    function () {
+                        // Optionally, refresh the page or update the profile picture on the page
+                        location.reload();  // This will reload the page to reflect the updated profile picture
+                    }
+                );
+            } else {
+                // Handle failure if it was unsuccessful
+                Notiflix.Report.Failure("Upload Failure", json.message , "OK");
+            }
+    })
+    .fail(function (jqxhr, textStatus, error) {
+        // Remove loading indicator on failure
+        Notiflix.Loading.Remove(500);
+
+        // Handle the error case
+        var errorMessage = "Failed to upload the profile picture: " + textStatus + ", " + error; // Default message if responseJSON is unavailable
+
+        if (jqxhr.responseJSON && jqxhr.responseJSON.message) {
+            errorMessage = jqxhr.responseJSON.message; // Use the message from the backend if available
+        } else if (jqxhr.responseJSON && jqxhr.responseJSON.error) {
+            errorMessage = jqxhr.responseJSON.error; // Alternatively, check for error field
+        } else if (jqxhr.responseJSON && jqxhr.responseJSON.errors) {
+            errorMessage = jqxhr.responseJSON.errors.map(function (err) { return err.description; }).join(", "); // Concatenate all error descriptions
+        }
+
+        // Show error message using Notiflix
+        Notiflix.Report.Failure("Upload Failed", errorMessage, "OK");
+    });
+
+    }
+
+
+</script>
+
+

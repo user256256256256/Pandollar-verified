@@ -1,0 +1,35 @@
+﻿@{
+    ViewData["Title"] = "Email Confirmed";
+}
+
+<div class="container mt-5">
+    <!-- Card with confirmation message -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-success text-white text-center">
+            <h4>Email Confirmed!</h4>
+        </div>
+        <div class="card-body text-center">
+            <p class="lead">
+                Thank you for confirming your email. You can now
+                <a href="/" class="btn btn-primary btn-lg" id="loginLinkButton">log in</a>
+                to your account.
+            </p>
+        </div>
+    </div>
+
+    <!-- Success message as alert -->
+    <div class="alert alert-success mt-4" role="alert">
+        Your email has been successfully confirmed. You are now ready to access your account.
+    </div>
+</div>
+
+<script>
+    // Add an event listener for the Enter key to trigger the login link click
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Prevent the default behavior
+            document.getElementById('loginLinkButton').click(); // Trigger the login link click
+        }
+    });
+</script>
+

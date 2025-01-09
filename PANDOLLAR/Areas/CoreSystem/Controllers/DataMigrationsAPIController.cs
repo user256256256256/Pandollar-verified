@@ -1,7 +1,10 @@
 ﻿using DevExtreme.AspNet.Data;
 using DevExtreme.AspNet.Mvc;
+using PANDOLLAR.Areas.CoreSystem.Models;
+using PANDOLLAR.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
@@ -10,16 +13,15 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using PANDOLLAR.Areas.CoreSystem.Models;
 
-namespace MedisatERP.Controllers
+namespace PANDOLLAR.Controllers
 {
     [Route("api/[controller]/[action]")]
     public class DataMigrationsAPIController : Controller
     {
-        private PandollarDbContext _context;
+        private PandollarDbContext  _context;
 
-        public DataMigrationsAPIController(PandollarDbContext context)
+        public DataMigrationsAPIController(PandollarDbContext  context)
         {
             _context = context;
         }
@@ -33,67 +35,193 @@ namespace MedisatERP.Controllers
         [HttpGet]
         public async Task<IActionResult> Get(DataSourceLoadOptions loadOptions, Guid companyId)
         {
-            var datamigrations = _context.DataMigrations
-                .Include(c => c.Company) // Ensure Company is eagerly loaded
-                .Select(i => new
-                {
-                    i.MigrationId,
-                    i.SourceSystem,
-                    i.DestinationSystem,
-                    i.Status,
-                    i.StartDate,
-                    i.EndDate,
-                    i.RecordsMigrated,
-                    i.ErrorCount,
-                    i.Log,
-                    i.MappingRules,
-                    i.CompanyId,
-                    Company = new
+            try
+            {
+                var datamigrations = _context.DataMigrations
+                    .Include(c => c.Company) // Ensure Company is eagerly loaded
+                    .Select(i => new
                     {
-                        i.Company.CompanyName,
-                        i.Company.CompanyEmail,
-                        i.Company.CompanyPhone
-                    }
-                }).Where(a => a.CompanyId == companyId).OrderBy(a => a.MigrationId);
+                        i.MigrationId,
+                        i.SourceSystem,
+                        i.DestinationSystem,
+                        i.Status,
+                        i.StartDate,
+                        i.EndDate,
+                        i.RecordsMigrated,
+                        i.ErrorCount,
+                        i.Log,
+                        i.MappingRules,
+                        i.CompanyId,
+                        Company = new
+                        {
+                            i.Company.CompanyName,
+                            i.Company.CompanyEmail,
+                            i.Company.CompanyPhone
+                        }
+                    }).Where(a => a.CompanyId == companyId).OrderBy(a => a.MigrationId);
 
-            // Apply filetering, sorting, anf paging using DataSourceLoader
-            var transformedData = await DataSourceLoader.LoadAsync(datamigrations, loadOptions);
+                // Apply filtering, sorting, and paging using DataSourceLoader
+                var transformedData = await DataSourceLoader.LoadAsync(datamigrations, loadOptions);
 
-            return Json(transformedData);
+                return Json(transformedData); // Return the processed data
+            }
+            catch (SqlException ex)
+            {
+                // Log the exception (consider using a logging framework)
+                Console.WriteLine(ex);  // Replace with your logging mechanism
+                return StatusCode(500, new { message = "A database error occurred. Please try again later." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Log the exception
+                Console.WriteLine(ex);  // Replace with your logging mechanism
+                return StatusCode(500, new { message = "An internal server error occurred. Please try again later." });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception message and stack trace for debugging purposes
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+
+                // Return a standardized error response
+                return StatusCode(500, new { message = "An unexpected error occurred. Please try again later.", error = ex.Message });
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> Post(string values)
         {
-            var model = new DataMigration();
-            var valuesDict = JsonConvert.DeserializeObject<IDictionary>(values);
-            PopulateModel(model, valuesDict);
+            try
+            {
+                var model = new DataMigration();
+                var valuesDict = JsonConvert.DeserializeObject<IDictionary>(values);
+                PopulateModel(model, valuesDict);
 
-            if (!TryValidateModel(model))
-                return BadRequest(GetFullErrorMessage(ModelState));
+                if (!TryValidateModel(model))
+                    return BadRequest(GetFullErrorMessage(ModelState));
 
-            var result = _context.DataMigrations.Add(model);
-            await _context.SaveChangesAsync();
+                var result = _context.DataMigrations.Add(model);
+                await _context.SaveChangesAsync();
 
-            return Json(new { result.Entity.MigrationId });
+                return Json(new { result.Entity.MigrationId });
+            }
+            catch (JsonSerializationException ex)
+            {
+                // Log the exception
+                Console.WriteLine($"JSON serialization error: {ex.Message}");
+                return BadRequest(new { message = "Invalid input format. Please check your data and try again." });
+            }
+            catch (SqlException ex)
+            {
+                // Log the exception (consider using a logging framework)
+                Console.WriteLine(ex);  // Replace with your logging mechanism
+                return StatusCode(500, new { message = "A database error occurred. Please try again later." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Log the exception
+                Console.WriteLine(ex);  // Replace with your logging mechanism
+                return StatusCode(500, new { message = "An internal server error occurred. Please try again later." });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception message and stack trace for debugging purposes
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+
+                // Return a standardized error response
+                return StatusCode(500, new { message = "An unexpected error occurred. Please try again later.", error = ex.Message });
+            }
         }
+
 
         [HttpPut]
         public async Task<IActionResult> Put(Guid key, string values)
         {
-            var model = await _context.DataMigrations.FirstOrDefaultAsync(item => item.MigrationId == key);
-            if (model == null)
-                return StatusCode(409, "Object not found");
+            try
+            {
+                // Retrieve the data migration by its unique identifier
+                var model = await _context.DataMigrations.FirstOrDefaultAsync(item => item.MigrationId == key);
+                if (model == null)
+                {
+                    Console.WriteLine($"Data migration not found with key: {key}");
+                    return StatusCode(409, "Object not found");
+                }
 
-            var valuesDict = JsonConvert.DeserializeObject<IDictionary>(values);
-            PopulateModel(model, valuesDict);
+                Console.WriteLine($"Data migration found with key: {key}, proceeding with updates.");
 
-            if (!TryValidateModel(model))
-                return BadRequest(GetFullErrorMessage(ModelState));
+                // Deserialize the incoming updated values
+                var valuesDict = JsonConvert.DeserializeObject<IDictionary>(values);
+                PopulateModel(model, valuesDict);
 
-            await _context.SaveChangesAsync();
-            return Ok();
+                // Validate the updated model before saving
+                if (!TryValidateModel(model))
+                {
+                    Console.WriteLine("Model validation failed.");
+                    return BadRequest(GetFullErrorMessage(ModelState));
+                }
+
+                Console.WriteLine("Model validated successfully.");
+
+                try
+                {
+                    // Save the changes to the database
+                    await _context.SaveChangesAsync();
+                    Console.WriteLine("Data migration updated successfully in the database.");
+                    return Ok();
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    // Handle the concurrency exception
+                    Console.WriteLine("Concurrency exception occurred while updating data migration.");
+                    var entry = ex.Entries.Single();
+                    var databaseValues = entry.GetDatabaseValues();
+                    if (databaseValues == null)
+                    {
+                        Console.WriteLine("The record you attempted to edit was deleted by another user.");
+                        return NotFound(new { success = false, message = "The record you attempted to edit was deleted by another user." });
+                    }
+                    else
+                    {
+                        var dbValues = (DataMigration)databaseValues.ToObject();
+                        Console.WriteLine("The record you attempted to edit was modified by another user.");
+
+                        // Optionally, reload the entity with current database values
+                        await entry.ReloadAsync();
+                        return Conflict(new { success = false, message = "The record you attempted to edit was modified by another user.", currentValues = dbValues });
+                    }
+                }
+            }
+            catch (JsonSerializationException ex)
+            {
+                // Log the exception
+                Console.WriteLine($"JSON serialization error: {ex.Message}");
+                return BadRequest(new { message = "Invalid input format. Please check your data and try again." });
+            }
+            catch (SqlException ex)
+            {
+                // Log the exception (consider using a logging framework)
+                Console.WriteLine(ex);  // Replace with your logging mechanism
+                return StatusCode(500, new { message = "A database error occurred. Please try again later." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Log the exception
+                Console.WriteLine(ex);  // Replace with your logging mechanism
+                return StatusCode(500, new { message = "An internal server error occurred. Please try again later." });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception message and stack trace for debugging purposes
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+
+                // Return a standardized error response
+                return StatusCode(500, new { message = "An unexpected error occurred. Please try again later.", error = ex.Message });
+            }
         }
+
+
 
         /// <summary>
         /// Deletes a migration  data by its unique identifier.
@@ -105,31 +233,62 @@ namespace MedisatERP.Controllers
         {
             try
             {
+                // Log the entry point with the key being used for deletion
+                Console.WriteLine($"Delete request received for Migration with ID: {key}");
+
                 // Retrieve the migration to delete
                 var model = await _context.DataMigrations.FirstOrDefaultAsync(item => item.MigrationId == key);
 
+                // Check if the model is null
                 if (model == null)
                 {
-                    // Return not found if does not exist
+                    // Log that the migration was not found
+                    Console.WriteLine($"No Migration found with ID: {key}");
+                    // Return not found if the migration does not exist
                     return NotFound($"Migration with ID {key} not found.");
                 }
 
-                // Remove the record
+                // Log the migration that was found for deletion
+                Console.WriteLine($"Found Migration with ID: {key}");
+
+                // Remove the migration record
                 _context.DataMigrations.Remove(model);
 
-                // Save changes to the database
+                // Log the removal of the migration
+                Console.WriteLine($"Removing Migration with ID: {key}");
+
+                // Save the changes to the database
                 await _context.SaveChangesAsync();
 
-                return NoContent(); // Return No Content status after successful deletion
+                // Log successful deletion
+                Console.WriteLine($"Successfully deleted Migration with ID: {key}");
 
+                return NoContent(); // Return No Content status after successful deletion
+            }
+            catch (SqlException ex)
+            {
+                // Log the exception (consider using a logging framework)
+                Console.WriteLine(ex);  // Replace with your logging mechanism
+                return StatusCode(500, new { message = "A database error occurred. Please try again later." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Log the exception
+                Console.WriteLine(ex);  // Replace with your logging mechanism
+                return StatusCode(500, new { message = "An internal server error occurred. Please try again later." });
             }
             catch (Exception ex)
             {
-                // Return an internal server error if an exception occurs
-                return StatusCode(500, $"An internal server error occurred: {ex.Message}");
-            }
+                // Log the exception message and stack trace for debugging purposes
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
 
+                // Return a standardized error response
+                return StatusCode(500, new { message = "An unexpected error occurred. Please try again later.", error = ex.Message });
+            }
         }
+
+
 
         /// <summary>
         /// Populates the company model with the given values.
