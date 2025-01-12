@@ -110,13 +110,13 @@ app.MapControllerRoute(
     name: "LogoutAPI",
     pattern: "api/{controller}/{action}");
 
-// Map routes for the "NutritionCompany" area
+// Map routes for the "Company" area
 app.MapAreaControllerRoute(
     name: "Company",
     areaName: "Company",
     pattern: "Company/{controller=Home}/{action=Index}/{userId}/{companyId:guid?}");
 
-// Specifically routes to the "NutritionSystem" controller within the "NutritionCompany" area
+// Specifically routes to the "CompanySystem" controller within the "Company" area
 app.MapAreaControllerRoute(
     name: "companySystemRoute",
     areaName: "Company",

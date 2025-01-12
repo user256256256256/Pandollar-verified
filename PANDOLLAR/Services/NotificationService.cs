@@ -59,7 +59,7 @@ namespace PANDOLLAR.Services
             var company = await _dbContext.Companies.Where(c => c.CompanyId == companyId).FirstOrDefaultAsync();
             var companyName = company.CompanyName;
             Console.WriteLine($"[NotificationService] User is a System Administrator. Triggering notification.");
-            await TriggerToastNotification("info", $"{companyName} has joined Medisat.");
+            await TriggerToastNotification("info", $"{companyName} has joined PANDOLLAR.");
         }
 
         public async Task NotifyCompanyDeactivation(string userEmail, Guid companyId)

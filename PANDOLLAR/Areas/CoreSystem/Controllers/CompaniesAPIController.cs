@@ -156,6 +156,11 @@ namespace MedisatERP.Controllers
                 {
                     model.CompanyId = Guid.NewGuid();
                 }
+                if (model.StatusId == 0) // Assuming 0 is the default value for unset StatusId
+                {
+                    model.StatusId = 2; // Set default value to 1 if StatusId is not set
+                }
+
 
                 // Set CreatedAt field if not already set
                 if (model.CreatedAt == null)
@@ -373,24 +378,26 @@ namespace MedisatERP.Controllers
                     }
                 }
 
-                // Step 5: Remove the associated address, if it exists
-                if (model.Address != null)
-                {
-                    _context.CompanyAddresses.Remove(model.Address);
-                }
+               
+                await _notificationService.NotifyCompanyDeletion(model.CompanyId);
 
-                // Step 6: Remove the company record itself
+                // Step 5: Remove the company record itself (cascade delete will take care of the address)
                 _context.Companies.Remove(model);
 
-                // Step 7: Save the changes to the database
+                // Step 6: Save the changes to the database
                 await _context.SaveChangesAsync();
 
-                await _notificationService.NotifyCompanyDeletion(model.CompanyId);
 
                 // Log successful deletion
                 Console.WriteLine($"Successfully deleted Company with ID: {key}");
 
                 return NoContent(); // Return No Content status after successful deletion
+            }
+            catch (DbUpdateException ex)
+            {
+                // Handle foreign key constraint violation
+                Console.WriteLine($"Database update error: {ex.InnerException?.Message ?? ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "A database error occurred. Please try again later.", error = ex.InnerException?.Message ?? ex.Message });
             }
             catch (JsonSerializationException ex)
             {
@@ -398,17 +405,11 @@ namespace MedisatERP.Controllers
                 Console.WriteLine($"JSON serialization error: {ex.Message}");
                 return BadRequest(new { message = "Invalid input format. Please check your data and try again." });
             }
-            catch (SqlException ex)
-            {
-                // Log the exception (consider using a logging framework)
-                Console.WriteLine(ex);  // Replace with your logging mechanism
-                return StatusCode(500, new { message = "A database error occurred. Please try again later." });
-            }
             catch (InvalidOperationException ex)
             {
                 // Log the exception
                 Console.WriteLine(ex);  // Replace with your logging mechanism
-                return StatusCode(500, new { message = "An internal server error occurred. Please try again later." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An internal server error occurred. Please try again later." });
             }
             catch (Exception ex)
             {
@@ -417,11 +418,9 @@ namespace MedisatERP.Controllers
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
 
                 // Return a standardized error response
-                return StatusCode(500, new { message = "An unexpected error occurred. Please try again later.", error = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An unexpected error occurred. Please try again later.", error = ex.Message });
             }
         }
-
-
 
         [HttpPut]
         public async Task<ActionResult> UploadLogo(string companyId, IFormFile companyLogo)

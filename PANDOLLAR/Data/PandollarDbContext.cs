@@ -71,7 +71,7 @@ public partial class PandollarDbContext : DbContext
     public virtual DbSet<TrialNotificationLookup> TrialNotificationLookups { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Data Source=medisaterp.lyfexafrica.com;uid=adminMedisatERP;pwd=Planchinobo256;TrustServerCertificate=True;");
+        => optionsBuilder.UseSqlServer("Data Source=DESKTOP-AUHHGDP\\SQLEXPRESS;Initial Catalog=PandollarDB;Integrated Security=True;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Application Intent=ReadWrite;Multi Subnet Failover=False;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

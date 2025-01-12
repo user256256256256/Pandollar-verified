@@ -1,4 +1,4 @@
-﻿// Wait for the DOM content to be loaded
+﻿ // Wait for the DOM content to be loaded
 document.addEventListener('DOMContentLoaded', function () {
 
     // This script provides custom templates of the application
@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
         connectedCallback() {
             this.innerHTML = `
                 <div class="text-center mt-4">
-                    <h3>MEDISAT ERP</h3>
+                    <h3>PANDOLLAR</h3>
                  </div>
             `;
         }
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
             this.innerHTML = `
                 <!-- Sidebar Brand (Logo) -->
                 <a class="sidebar-brand" href="/">
-                    <center><span class="align-middle">MEDISAT ERP </span></center>
+                    <center><span class="align-middle">PANDOLLAR </span></center>
                 </a>
             `;
         }
@@ -31,12 +31,31 @@ document.addEventListener('DOMContentLoaded', function () {
             this.innerHTML = `
             <!-- Footer with copyright information -->
             <div class="text-center mb-3">
-                <p class="mt-3" style="font-size:11px;">&copy;Medisat ERP </p>
+                <p class="mt-3" style="font-size:11px;">&copy;PANDOLLAR </p>
             </div>
             `;
         }
     }
     customElements.define('welcome-footer', WelcomeFooter);
 
+    class EndBarSection extends HTMLElement {
+        connectedCallback() {
+            this.innerHTML = `
+                <!-- Footer Section -->
+                <footer class="footer">
+                    <div class="container-fluid">
+                        <div class="row text-muted">
+                            <div class="col-12 text-start">
+                                <p class="mb-0" style="color: #565e64; ">
+                                    PANDOLLAR
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+            `;
+        }
+    }
+    customElements.define('end-bar', EndBarSection);
 });
 

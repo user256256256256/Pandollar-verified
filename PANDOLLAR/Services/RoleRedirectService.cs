@@ -55,16 +55,16 @@ namespace PANDOLLAR.Services
                     redirectUrl = $"/CoreSystem/SystemManager/Index/{encodedUserId}";
                 }
             }
-            else if (roles.Contains("Nutrition Company Administrator"))
+            else if (roles.Contains("Company Administrator"))
             {
-                Console.WriteLine("User is a Nutrition Company Administrator.");
+                Console.WriteLine("User is a  Company Administrator.");
 
                 if (userId != null)
                 {
                     var encodedUserId = HashingHelper.EncodeString(userId);
                     var encodedCompanyId = HashingHelper.EncodeGuidID(companyId.Value);
                     Console.WriteLine($"Encoded UserId: {encodedUserId}");
-                    redirectUrl = $"/NutritionCompany/NutritionSystem/Index/{encodedUserId}/{encodedCompanyId}";
+                    redirectUrl = $"/Company/CompanySystem/Index/{encodedUserId}/{encodedCompanyId}";
                 }
             }
             else
@@ -111,15 +111,15 @@ namespace PANDOLLAR.Services
                 Console.WriteLine($"AspNetUser found, UserId: {userId}");
 
                 string redirectUrl = null;
-                if (roles.Contains("System Administrator") && roles.Contains("Nutrition Company Administrator"))
+                if (roles.Contains("System Administrator") && roles.Contains("Company Administrator"))
                 {
-                    Console.WriteLine("User is a System Administrator and a Nutrition Company Administrator.");
+                    Console.WriteLine("User is a System Administrator and a Company Administrator.");
                     if (!string.IsNullOrEmpty(userId))
                     {
                         var encodedUserId = HashingHelper.EncodeString(userId);
                         var encodedCompanyId = HashingHelper.EncodeGuidID(companyId);
                         Console.WriteLine($"Encoded UserId: {encodedUserId}");
-                        redirectUrl = $"/NutritionCompany/NutritionSystem/Index/{encodedUserId}/{encodedCompanyId}";
+                        redirectUrl = $"/Company/CompanySystem/Index/{encodedUserId}/{encodedCompanyId}";
                     }
                 }
 

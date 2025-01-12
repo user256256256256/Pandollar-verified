@@ -99,7 +99,7 @@
     --bs-tertiary-bg-rgb: 248,249,250;
     --bs-heading-color: #000;
     --bs-link-color: #5bc14c;
-    --bs-link-color-rgb: 91, 193, 76;
+    --bs-link-color-rgb: 47, 30, 7;
     --bs-link-decoration: none;
     --bs-link-hover-color: #2f64b1;
     --bs-link-hover-color-rgb: 47,100,177;
@@ -3197,7 +3197,7 @@ textarea.form-control-lg {
 
 .btn-success {
     --bs-btn-color: #000;
-    --bs-btn-bg: #208611;
+    --bs-btn-bg: #f56610;
     --bs-btn-border-color: #1cbb8c;
     --bs-btn-hover-color: #000;
     --bs-btn-hover-bg: #2ab515;
@@ -3583,7 +3583,7 @@ textarea.form-control-lg {
 }
 
 .dropdownProfile {
-    background-color: #563d7c;
+    background-color: #e6e9ef;
 }
 
 .dropdown-menu[data-bs-popper] {
@@ -3806,7 +3806,7 @@ textarea.form-control-lg {
     border: 0;
     border-radius: var(--bs-dropdown-item-border-radius,0);
     clear: both;
-    color: #fff;
+    color: #000;
     display: block;
     font-weight: 400;
     padding: var(--bs-dropdown-item-padding-y) var(--bs-dropdown-item-padding-x);
@@ -3822,7 +3822,7 @@ textarea.form-control-lg {
     }
 
     .dropdown-item.active, .dropdown-item:active {
-        background-color: #3B3D55;
+        background-color: #f56610;
         color: var(--bs-dropdown-link-active-color);
         text-decoration: none
     }
@@ -14097,12 +14097,7 @@ body {
 }*/
 
 .sidebar, .sidebar-content {
-    /* background: linear-gradient(to top, rgba(150, 105, 205, 1) 5%, rgba(255, 255, 255, 0) 100%);*/
-    /* background :#6f42c1;*/
-    /* background: linear-gradient(to top, #6f42c1, #9b6bd3);*/
-    /*    background: #6f42c1;*/
-    /*    background: #3B3D55;*/
-    background: #311465;
+    background: #e6e9ef;
     transition: margin-left .35s ease-in-out,left .35s ease-in-out,margin-right .35s ease-in-out,right .35s ease-in-out
 }
 
@@ -14129,7 +14124,7 @@ body {
 
 .sidebar-link, a.sidebar-link {
     border-left: 3px solid transparent;
-    color: white;
+    color: #333;
     cursor: pointer;
     display: block;
     font-weight: 400;
@@ -14139,26 +14134,26 @@ body {
     transition: background .1s ease-in-out
 }
 
-    .sidebar-link i, .sidebar-link svg, a.sidebar-link i, a.sidebar-link svg {
-        color: rgba(233,236,239,.5);
-        margin-right: .75rem
-    }
+.sidebar-link i, .sidebar-link svg, a.sidebar-link i, a.sidebar-link svg {
+    color: #000;
+    margin-right: .75rem
+}
 
-    .sidebar-link:focus {
-        outline: 0
-    }
+.sidebar-link:focus {
+    outline: 0
+}
 
-    .sidebar-link:hover {
-        background: rgba(180, 135, 255, 0.4);
-        border-left-color: transparent
-    }
+.sidebar-link:hover {
+    background: rgb(12 12 12 / 10%);
+    border-left-color: transparent
+}
 
-        .sidebar-link:hover, .sidebar-link:hover i, .sidebar-link:hover svg {
-            color: rgba(233,236,239,.75)
-        }
+.sidebar-link:hover, .sidebar-link:hover i, .sidebar-link:hover svg {
+    color: rgba(233,236,239,.75)
+}
 
 .sidebar-item.active .sidebar-link:hover, .sidebar-item.active > .sidebar-link {
-    background: rgba(180, 135, 255, 0.4); /* Background color */
+    background: rgb(12 12 12 / 10%); /* Background color */
     border-left-color: white; /* Set border left color to white */
     color: #e9ecef; /* Light text color */
 }
@@ -14168,7 +14163,7 @@ body {
     }
 
 .sidebar-brand {
-    color: #f8f9fa;
+    color: #000;
     display: block;
     font-size: 1.15rem;
     font-weight: 600;
@@ -14212,7 +14207,7 @@ body {
 .sidebar-header {
     background: transparent;
     font-weight: bold;
-    color: #ced4da;
+    color: #333;
     font-size: .75rem;
     padding: 1.5rem 1.5rem .375rem;
     transition: color 0.3s ease, background-color 0.3s ease; 
@@ -14220,13 +14215,13 @@ body {
 
 /* Hover state */
 .sidebar-header:hover {
-    color: #208611; /* Change text color on hover */
-    background-color: rgba(32, 134, 17, 0.1); /* Optional: Add background color on hover */
+    color: #f56610; /* Change text color on hover */
+    background-color: rgb(12 12 12 / 10%); /* Optional: Add background color on hover */
 }
 
 /* Active state - color change when the element is clicked */
 .sidebar-header.active {
-    color: #208611; /* Change text color when active */
+    color: #f56610; /* Change text color when active */
     /*background-color: rgba(32, 134, 17, 0.2);*/ /* Optional: Change background color when active */
 }
 
@@ -15526,18 +15521,19 @@ span.flatpickr-weekday {
 .card-title {
     margin-bottom: 20px;
     padding: 20px;
-    background: #311465;
-    text-align: center;
-    color: white;
+    background: #e6e9ef;
+    display: flex;
+    flex-direction: row;
+    color: #333;
 }
 
 /*Nutrition system card */
-.card-title-nutrition-system {
+.card-title-company-system {
     margin-bottom: 20px;
     padding: 20px;
-    background: #311465;
+    background: #e6e9ef;
     display: flex;
-    color: white;
+    color: #333;
     flex-direction: row;
     font-size: .925rem;
     font-weight: 600
@@ -15555,7 +15551,7 @@ span.flatpickr-weekday {
 
 .section .section-title {
     font-size: 18px;
-    color: #3B3D55;
+    color: #333;
     font-weight: 600;
     position: relative;
     margin: 30px 0 25px 0;
@@ -15566,7 +15562,7 @@ span.flatpickr-weekday {
     border-radius: 5px;
     height: 8px;
     width: 30px;
-    background-color: #563d7c;
+    background-color: #f56610;
     display: inline-block;
     float: left;
     margin-top: 6px;
@@ -15591,7 +15587,7 @@ span.flatpickr-weekday {
 
 .setting-title {
     font-size: 18px;
-    color: #3B3D55;
+    color: #f56610;
     font-weight: 600;
     position: relative;
     margin: 30px 0 25px 0;
@@ -15660,5 +15656,5 @@ span.flatpickr-weekday {
 
 
 .authentication-bg {
-    background: linear-gradient(to bottom, rgba(150, 105, 205, 0.4), rgba(255, 255, 255, 0));
+    background: linear-gradient(to bottom, rgb(229 139 17 / 80%), rgba(255, 255, 255, 0));
 }

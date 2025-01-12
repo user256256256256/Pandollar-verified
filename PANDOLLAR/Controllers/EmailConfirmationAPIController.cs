@@ -1,6 +1,4 @@
-﻿using PANDOLLAR.Data;
-using PANDOLLAR.Services;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace PANDOLLAR.Controllers
@@ -30,12 +28,13 @@ namespace PANDOLLAR.Controllers
             {
                 return RedirectToAction("Error", "Home", new { message = "User not found." });
             }
-
+            Console.WriteLine(user.Email);
             var result = await _userManager.ConfirmEmailAsync(user, token);
             if (result.Succeeded)
             {
                 return RedirectToAction("Index", "EmailConfirmation");
             }
+            Console.WriteLine(result.Succeeded);
 
             return RedirectToAction("Error", "Home", new { message = "Email confirmation failed." });
         }

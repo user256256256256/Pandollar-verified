@@ -99,7 +99,7 @@
     --bs-tertiary-bg-rgb: 248,249,250;
     --bs-heading-color: #000;
     --bs-link-color: #5bc14c;
-    --bs-link-color-rgb: 91, 193, 76;
+    --bs-link-color-rgb: 189, 71, 0;
     --bs-link-decoration: none;
     --bs-link-hover-color: #2f64b1;
     --bs-link-hover-color-rgb: 47,100,177;
@@ -3197,10 +3197,10 @@ textarea.form-control-lg {
 
 .btn-success {
     --bs-btn-color: #000;
-    --bs-btn-bg: #071705;
+    --bs-btn-bg: #bd4700;
     --bs-btn-border-color: #333;
     --bs-btn-hover-color: #000;
-    --bs-btn-hover-bg: #10360a;
+    --bs-btn-hover-bg: #bd4700;
     --bs-btn-hover-border-color: #333;
     --bs-btn-focus-shadow-rgb: 24,159,119;
     --bs-btn-active-color: #000;
@@ -3583,7 +3583,7 @@ textarea.form-control-lg {
 }
 
 .dropdownProfile {
-    background-color: #563d7c;
+    background-color: #333;
 }
 
 .dropdown-menu[data-bs-popper] {
@@ -3596,33 +3596,33 @@ textarea.form-control-lg {
     --bs-position: start
 }
 
-    .dropdown-menu-start[data-bs-popper] {
-        left: 0;
-        right: auto
-    }
+.dropdown-menu-start[data-bs-popper] {
+    left: 0;
+    right: auto
+}
 
 .dropdown-menu-end {
     --bs-position: end
 }
 
-    .dropdown-menu-end[data-bs-popper] {
-        left: auto;
-        right: 0
-    }
+.dropdown-menu-end[data-bs-popper] {
+    left: auto;
+    right: 0
+}
 
 @media(min-width:576px) {
     .dropdown-menu-sm-start {
         --bs-position: start
     }
 
-        .dropdown-menu-sm-start[data-bs-popper] {
-            left: 0;
-            right: auto
-        }
+.dropdown-menu-sm-start[data-bs-popper] {
+    left: 0;
+    right: auto
+}
 
-    .dropdown-menu-sm-end {
-        --bs-position: end
-    }
+.dropdown-menu-sm-end {
+    --bs-position: end
+}
 
         .dropdown-menu-sm-end[data-bs-popper] {
             left: auto;
@@ -3822,7 +3822,7 @@ textarea.form-control-lg {
     }
 
     .dropdown-item.active, .dropdown-item:active {
-        background-color: #3B3D55;
+        background-color: #bd4700;
         color: var(--bs-dropdown-link-active-color);
         text-decoration: none
     }
@@ -14107,7 +14107,7 @@ body {
 }*/
 
 .sidebar, .sidebar-content {
-    background: #0e041e;
+    background: #121212;
     transition: margin-left .35s ease-in-out,left .35s ease-in-out,margin-right .35s ease-in-out,right .35s ease-in-out
 }
 
@@ -14154,7 +14154,7 @@ body {
     }
 
 .sidebar-link:hover {
-    background: rgba(22, 7, 47, 0.8);
+    background: rgb(47 30 7 / 80%);
     border-left-color: transparent
 }
 
@@ -14163,7 +14163,7 @@ body {
 }
 
 .sidebar-item.active .sidebar-link:hover, .sidebar-item.active > .sidebar-link {
-    background: rgba(22, 7, 47, 0.8); /* Darker purple background */
+    background: rgb(47 30 7 / 80%); /* Darker purple background */
     border-left-color: white; /* Keep white border */
     color: #e9ecef; /* Light text color */
 }
@@ -14226,13 +14226,13 @@ body {
 
     /* Hover state */
     .sidebar-header:hover {
-        color: #10360a; /* Change text color on hover */
-        background-color: rgba(32, 134, 17, 0.1); /* Optional: Add background color on hover */
+        color: #bd4700; /* Change text color on hover */
+        background-color: rgb(47 30 7 / 80%); /* Optional: Add background color on hover */
     }
 
     /* Active state - color change when the element is clicked */
     .sidebar-header.active {
-        color: #10360a; /* Change text color when active */
+        color: #bd4700; /* Change text color when active */
         /*background-color: rgba(32, 134, 17, 0.2);*/ /* Optional: Change background color when active */
     }
 
@@ -15572,7 +15572,7 @@ span.flatpickr-weekday {
     border-radius: 5px;
     height: 8px;
     width: 30px;
-    background-color: #563d7c;
+    background-color: #bd4700;
     display: inline-block;
     float: left;
     margin-top: 6px;
@@ -15596,7 +15596,7 @@ span.flatpickr-weekday {
 
 .setting-title {
     font-size: 18px;
-    color: #3B3D55;
+    color: #bd4700;
     font-weight: 600;
     position: relative;
     margin: 30px 0 25px 0;
@@ -15666,5 +15666,5 @@ span.flatpickr-weekday {
 
 
 .authentication-bg {
-    background: linear-gradient(to bottom, rgba(150, 105, 205, 0.4), rgba(255, 255, 255, 0));
+    background: linear-gradient(to bottom, rgb(160 92 0 / 80%), rgba(255, 255, 255, 0));
 }

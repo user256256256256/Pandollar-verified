@@ -31,6 +31,7 @@
                 { "INVALID_USER_ID", "Invalid user ID." },
                 { "INVALID_USER_ID_AFTER_DECODING", "Invalid user ID after decoding." },
                 { "LOGOUT_FAILED", "Logout failed. Please try again." },
+                { "EMAIL_NOT_CONFIRMED", "Your email exists but it is not confirmed, a confirmation link has been sent to your email address" },
 
                 // Validation Errors
                 { "INVALID_INPUT", "The input provided is invalid." },
